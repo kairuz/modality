@@ -1,0 +1,231 @@
+<html>
+
+<head>
+<style>
+
+#capture-ui {
+  height: 140px;
+  margin-bottom: 40px;
+}
+
+#piano-ui {
+  height: 80px;
+}
+
+#uis-buffer {
+  height: 100%;
+}
+
+.uiDiv {
+  margin: 20px;
+  padding: 10px;
+}
+
+.uiInfoDiv {
+  padding: 10px;
+}
+
+.captureUiTable {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.captureDiffAndPrevPiano {
+  border: 1px solid lightgrey;
+}
+
+.prevPiano {
+  height: 100px;
+}
+
+.captureDiffUiTable {
+
+}
+
+.captureUiTd {
+  width: 500px;
+  height: 50px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.captureDiffUiTd {
+  width: 340px;
+  height: 30px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.captureUiTdChangedPrev {
+  color: maroon;
+  font-weight: bold;
+}
+
+.captureUiTdChanged {
+  color: darkgreen;
+  font-weight: bold;
+}
+
+.captureUiTdUnchanged {
+  color: grey;
+}
+
+</style>
+<script type="module">
+
+import * as domain from "./domain.js";
+import * as conductorLib from "./conductor.js";
+import buildConductor from "./factory.js";
+
+import * as pianoLib from "./piano.js";
+import * as uiLib from "./ui.js";
+
+
+let audioContext = new AudioContext();
+let startTime = null;
+
+const leadRifferQueueCallback = (currPresetName, currentTime, when, whenOffset, duration, pitch, currVolume) => {
+  if (pitch >= pianoLib.MIN_INDEX && pitch <= pianoLib.MAX_INDEX) {
+    const selectTimeoutId = setTimeout(() => {
+      leadRifferTimeoutIds.delete(selectTimeoutId);
+
+      pianoUi.getPianoKeyUi(pitch).select();
+
+      const deselectTimeoutId = setTimeout(() => {
+        leadRifferTimeoutIds.delete(deselectTimeoutId);
+
+        pianoUi.getPianoKeyUi(pitch).deselect();
+      }, duration * 1000);
+
+      leadRifferTimeoutIds.add(deselectTimeoutId);
+
+    }, ((when + whenOffset) - currentTime) * 1000);
+    leadRifferTimeoutIds.add(selectTimeoutId);
+  }
+};
+
+
+const conductorChangeCallback = (changeType, currentTime, when, bar, composerCapture, composerPrevCapture) => {
+  setTimeout(() => {
+
+
+    updateHighlight(composerPrevCapture, pianoUi, 'white', 'black', 'white', 'black', 1, 2);
+    updateHighlight(composerCapture, pianoUi, 'lightblue', 'lightblue', 'cornflowerblue', 'cornflowerblue', 1, 2);
+
+    if (changeType !== conductorLib.CHANGE_NONE) {
+      const ui = uiLib.CaptureDiffUi(composerCapture, composerPrevCapture, bar, when - startTime, changeType);
+      const captureDiffAndPrevPianoDiv = document.createElement('div');
+      captureDiffAndPrevPianoDiv.classList.add('captureDiffAndPrevPiano');
+      const prevPianoDiv = document.createElement('div');
+      prevPianoDiv.classList.add('prevPiano');
+      captureDiffAndPrevPianoDiv.appendChild(ui.div);
+      captureDiffAndPrevPianoDiv.appendChild(prevPianoDiv);
+      const prevPianoUi = pianoLib.PianoUi();
+      updateHighlight(composerPrevCapture, prevPianoUi, 'lightcoral', 'lightcoral', 'indianred', 'indianred', 1, 2);
+      updateHighlight(composerCapture, prevPianoUi, 'lightgreen', 'lightgreen', 'olivedrab', 'olivedrab', 4, 5);
+      prevPianoDiv.appendChild(prevPianoUi.div);
+      uiDivsBuffer.push(captureDiffAndPrevPianoDiv);
+      uisBufferDiv.prepend(captureDiffAndPrevPianoDiv);
+    }
+    else {
+      const ui = uiLib.BarUi(bar, when - startTime);
+      uiDivsBuffer.push(ui.div);
+      uisBufferDiv.prepend(ui.div);
+    }
+
+    captureUi.update(composerCapture);
+
+    if (uiDivsBuffer.length > UIS_BUFFER_LIMIT) {
+      const shiftedUiDiv = uiDivsBuffer.shift();
+      shiftedUiDiv.remove();
+    }
+  }, ((when - currentTime) - 250) * 1000);
+};
+
+const conductor = buildConductor(audioContext, leadRifferQueueCallback, conductorChangeCallback);
+
+const uiDivsBuffer = [];
+const UIS_BUFFER_LIMIT = 40;
+
+const captureUi = uiLib.CaptureUi();
+const captureUiDiv = document.getElementById('capture-ui');
+captureUiDiv.appendChild(captureUi.div);
+
+const pianoUi = pianoLib.PianoUi();
+const pianoUiDiv = document.getElementById('piano-ui');
+pianoUiDiv.appendChild(pianoUi.div);
+
+const uisBufferDiv = document.getElementById('uis-buffer');
+
+const updateHighlight = (_composerCapture, pianoUi,
+                         modeHighlightColor, modeHighlightColorAcc, chordHighlightColor, chordHighlightColorAcc,
+                         modeHighlightOctave, chordHighlightOctave) => {
+  const modeOffsets = domain.SCALES[_composerCapture.scaleIndex].getModeOffsets(_composerCapture.modeIndex + _composerCapture.chordIndex);
+  const modeHighlightOffset = (domain.SEMITONES * modeHighlightOctave) + _composerCapture.chordKeyIndex;
+  modeOffsets.forEach((modeOffset) => {
+    const pianoKeyUi = pianoUi.getPianoKeyUi(modeHighlightOffset + modeOffset);
+    pianoKeyUi.setBackground(pianoKeyUi.pianoKey.isAccidental ? modeHighlightColorAcc : modeHighlightColor);
+  });
+
+  const chordOffsets = domain.SCALES[_composerCapture.scaleIndex].getChordOffsets(_composerCapture.chordType, _composerCapture.modeIndex + _composerCapture.chordIndex);
+  const chordHighlightOffset = (domain.SEMITONES * chordHighlightOctave) + _composerCapture.chordKeyIndex;
+  chordOffsets.forEach((chordOffset) => {
+    const pianoKeyUi = pianoUi.getPianoKeyUi(chordHighlightOffset + chordOffset);
+    pianoKeyUi.setBackground(pianoKeyUi.pianoKey.isAccidental ? chordHighlightColorAcc : chordHighlightColor);
+  });
+};
+
+const leadRifferTimeoutIds = new Set();
+
+const stop = () => {
+  conductor.stop();
+  leadRifferTimeoutIds.forEach((timeoutId) => clearTimeout(timeoutId));
+  leadRifferTimeoutIds.clear();
+};
+
+const start = () => {
+  stop();
+  uiDivsBuffer.forEach((uiDiv) => {
+    uiDiv.remove();
+  });
+  uiDivsBuffer.length = 0;
+
+  audioContext.resume().then(() => {
+    pianoUi.forEachPianoKeyUi((pianoKeyUi) => {
+      pianoKeyUi.setBackground(pianoKeyUi.pianoKey.isAccidental ? 'black' : 'white');
+    });
+
+    conductor.player.contextInitLoader.get().then(() => {
+      startTime = audioContext.currentTime;
+      conductor.start();
+
+      const composerCapture = conductor.composer.capture();
+
+      captureUi.update(composerCapture);
+      updateHighlight(conductor.composer.capture(), pianoUi, 'lightblue', 'lightblue', 'cornflowerblue', 'cornflowerblue', 1, 2);
+
+      const barUi = uiLib.BarUi(0, conductor.player.currentTime - startTime);
+      uiDivsBuffer.push(barUi.div);
+      uisBufferDiv.prepend(barUi.div);
+    });
+  });
+};
+
+window.addEventListener('load', () => {
+  document.getElementById('buttonStop').addEventListener('click', stop);
+  document.getElementById('buttonStart').addEventListener('click', start);
+});
+
+</script>
+</head>
+
+<body>
+  <div>
+    <button id="buttonStart">Start</button>
+    <button id="buttonStop">Stop</button>
+  </div>
+  <div id="capture-ui"></div>
+  <div id="piano-ui"></div>
+  <div id="uis-buffer"></div>
+</body>
+</html>
