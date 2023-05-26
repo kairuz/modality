@@ -164,7 +164,7 @@ const PianoUi = (piano = Piano()) => {
     get piano(){return piano;},
     getPianoKeyUi(index){
       if (!Number.isInteger(index) || index < MIN_INDEX || index > MAX_INDEX) {
-        throw 'invalid index ' + index;
+        throw 'invalid index';
       }
       return pianoKeyUis[index];
     },
