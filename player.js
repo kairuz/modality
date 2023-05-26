@@ -1,4 +1,4 @@
-import {WebAudioFontPlayer} from "./web-audio-font-player.js";
+import WebAudioFontPlayer from "https://kairuz.github.io/webaudiofont/npm/dist/player.js";
 import * as util from "./util.js";
 
 
