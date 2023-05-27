@@ -201,6 +201,7 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
     get chordProgressionIndex(){return chordProgressionIndex;},
     get chordProgressionIndexI(){return chordProgressionIndexI;},
     get barRiffs(){return barRiffs;},
+    get barLengthSecs(){return BAR_LENGTH_SECS;},
     start,
     stop
   });
