@@ -26,11 +26,11 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
         ]);
         // override volumes
         currVolume = {
-          [playerLib.PRESET_NAME_GUITAR_ELECTRIC_JAZZ]: 0.6,
+          [playerLib.PRESET_NAME_GUITAR_ELECTRIC_JAZZ]: 0.5,
           [playerLib.PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE]: 0.4,
-          [playerLib.PRESET_NAME_GUITAR_NYLON]: 0.6,
-          [playerLib.PRESET_NAME_GUITAR_STEEL]: 0.7,
-          [playerLib.PRESET_NAME_PIANO]: 0.5
+          [playerLib.PRESET_NAME_GUITAR_NYLON]: 0.5,
+          [playerLib.PRESET_NAME_GUITAR_STEEL]: 0.6,
+          [playerLib.PRESET_NAME_PIANO]: 0.4
         }[currPresetName];
       }
 
@@ -38,7 +38,7 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
 
       const durations = [0.3, 0.4, 0.4, 0.5, 0.5, 0.5, 0.6, 0.6, 0.6, 0.7];
 
-      const queueLead = (whenOffset, pitch, durationOverride = null) => {
+      const queueLead = (whenOffset, pitch, durationOverride = null, volumeOverride = null) => {
 
         if (pitch < MIN_INDEX || pitch > MAX_INDEX || whenOffset > BAR_LENGTH_SECS) {
           // out of bounds
@@ -46,8 +46,10 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
         }
 
         const duration = durationOverride === null ? util.randomChoice(durations) : durationOverride;
-        player.play(currPresetName, when + whenOffset, duration, pitch, currVolume);
-        queueCallback(currPresetName, player.currentTime, when, whenOffset, duration, pitch, currVolume);
+
+        const volume = volumeOverride !== null ? volumeOverride : currVolume;
+        player.play(currPresetName, when + whenOffset, duration, pitch, volume);
+        queueCallback(currPresetName, player.currentTime, when, whenOffset, duration, pitch, volume);
       };
 
       const riffA = () => {
@@ -275,9 +277,9 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
       };
 
       const riffEa = () => {
-        const chordCount = 10;
-        const pluckNoteLengthSecs = BAR_LENGTH_SECS / util.randomChoice([chordCount + util.randomInt(3), 10]);
-        const trillGapSecs = pluckNoteLengthSecs / 20;
+        const chordCount = util.randomChoice([7, 8, 9, 10]);
+        const pluckNoteLengthSecs = BAR_LENGTH_SECS / util.randomChoice([chordCount + util.randomInt(2), chordCount]);
+        const trillGapSecs = pluckNoteLengthSecs / 10;
 
         let accTime = 0;
         for (let i = 0; i < chordCount; i++) {
@@ -292,19 +294,25 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
             if (util.randomChance(3)) {
               return;
             }
-            queueLead(accTime + (j * trillGapSecs), co + (12 * (composer.octave + addOctave - minusOctave)) + composer.chordKeyIndex, util.randomChoice([0.3, 0.5, 0.7]));
+            queueLead(
+                accTime + (j * trillGapSecs),
+                co + (12 * (composer.octave + addOctave - minusOctave)) + composer.chordKeyIndex,
+                util.randomChoice([0.3, 0.5, 0.7]),
+                currVolume - 0.2
+            );
           });
-          if (util.randomChance(5)) {
-            queueLead(accTime, relativeChordOffsets[0] + (12 * (composer.octave - 2) + composer.chordKeyIndex), 0.8);
+          if (util.randomChance(3)) {
+            queueLead(
+                accTime, relativeChordOffsets[0] + (12 * (composer.octave - 2) + composer.chordKeyIndex), 0.8);
           }
           accTime += pluckNoteLengthSecs;
         }
       };
 
       const riffEb = () => {
-        const chordCount = 10;
-        const pluckNoteLengthSecs = BAR_LENGTH_SECS / util.randomChoice([chordCount + util.randomInt(3), 10]);
-        const trillGapSecs = pluckNoteLengthSecs / 20;
+        const chordCount = util.randomChoice([7, 8, 9, 10]);
+        const pluckNoteLengthSecs = BAR_LENGTH_SECS / util.randomChoice([chordCount + util.randomInt(2), chordCount]);
+        const trillGapSecs = pluckNoteLengthSecs / 10;
 
         let accTime = 0;
         for (let i = chordCount - 1; i > 0; i--) {
@@ -319,10 +327,16 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
             if (util.randomChance(3)) {
               return;
             }
-            queueLead(accTime + (j * trillGapSecs), co + (12 * (composer.octave + addOctave - minusOctave)) + composer.chordKeyIndex, util.randomChoice([0.3, 0.5, 0.7]));
+            queueLead(
+                accTime + (j * trillGapSecs),
+                co + (12 * (composer.octave + addOctave - minusOctave)) + composer.chordKeyIndex,
+                util.randomChoice([0.3, 0.5, 0.7]),
+                currVolume - 0.2
+            );
           });
-          if (util.randomChance(5)) {
-            queueLead(accTime, relativeChordOffsets[0] + (12 * (composer.octave - 2) + composer.chordKeyIndex), 0.8);
+          if (util.randomChance(3)) {
+            queueLead(
+                accTime, relativeChordOffsets[0] + (12 * (composer.octave - 2) + composer.chordKeyIndex), 0.8);
           }
           accTime += pluckNoteLengthSecs;
         }
