@@ -112,6 +112,14 @@ const conductorChangeCallback = (changeType, currentTime, when, bar, composerCap
     updateHighlight(composerPrevCapture, pianoUi, 'white', 'black', 'white', 'black', 1, 2);
     updateHighlight(composerCapture, pianoUi, 'lightblue', 'lightblue', 'cornflowerblue', 'cornflowerblue', 1, 2);
 
+    const transformHeight = (div, startHeightPx, endHeightPx) => {
+      div.style.overflow = 'hidden';
+      div.style.height = `${startHeightPx}px`;
+      div.style.transition = '1s ease height';
+      div.offsetHeight;
+      div.style.height = `${endHeightPx}px`;
+    };
+
     if (changeType !== conductorLib.CHANGE_NONE) {
       const ui = uiLib.CaptureDiffUi(composerCapture, composerPrevCapture, bar, when - startTime, changeType);
       const captureDiffAndPrevPianoDiv = document.createElement('div');
@@ -126,11 +134,13 @@ const conductorChangeCallback = (changeType, currentTime, when, bar, composerCap
       prevPianoDiv.appendChild(prevPianoUi.div);
       uiDivsBuffer.push(captureDiffAndPrevPianoDiv);
       uisBufferDiv.prepend(captureDiffAndPrevPianoDiv);
+      transformHeight(captureDiffAndPrevPianoDiv, 0, 300);
     }
     else {
       const ui = uiLib.BarUi(bar, when - startTime);
       uiDivsBuffer.push(ui.div);
       uisBufferDiv.prepend(ui.div);
+      transformHeight(ui.div, 0, 40);
     }
 
     captureUi.update(composerCapture);

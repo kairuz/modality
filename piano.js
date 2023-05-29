@@ -86,7 +86,7 @@ const PianoUi = (piano = Piano()) => {
   pianoUiDiv.style.width = `${KEY_WIDTH * piano.diatonics}px`;
   pianoUiDiv.style.height = `${KEY_HEIGHT}px`;
   pianoUiDiv.style.boxSizing = 'border-box';
-  pianoUiDiv.style.position = 'absolute';
+  pianoUiDiv.style.position = 'relative';
 
   const PianoKeyUi = (pianoKey) => {
     const pianoKeyUiDiv = document.createElement('div');
