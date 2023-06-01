@@ -36,15 +36,21 @@ const keyNameIndex = {
   'B': 11,
 };
 
-
 const SCALE_PATTERN_MAJOR           = '101011010101';
 const SCALE_PATTERN_HARMONIC_MINOR  = '101011001101';
 const SCALE_PATTERN_HARMONIC_MAJOR  = '101011011001';
 const SCALE_PATTERN_MELODIC_MINOR   = '101101010101';
 
-const SCALE_NAMES = Object.freeze(['Major', 'Harmonic Minor', 'Harmonic Major', 'Melodic Minor']);
+const SCALE_PATTERNS = Object.freeze([SCALE_PATTERN_MAJOR, SCALE_PATTERN_HARMONIC_MINOR, SCALE_PATTERN_HARMONIC_MAJOR, SCALE_PATTERN_MELODIC_MINOR]);
 
-const MAJOR_SCALE_MODES_NAMES = Object.freeze([
+const SCALE_NAME_MAJOR          = 'Major';
+const SCALE_NAME_HARMONIC_MINOR = 'Harmonic Minor';
+const SCALE_NAME_HARMONIC_MAJOR = 'Harmonic Major';
+const SCALE_NAME_MELODIC_MINOR  = 'Melodic Minor';
+
+const SCALE_NAMES = Object.freeze([SCALE_NAME_MAJOR, SCALE_NAME_HARMONIC_MINOR, SCALE_NAME_HARMONIC_MAJOR, SCALE_NAME_MELODIC_MINOR]);
+
+const MODE_NAMES_MAJOR_SCALE = Object.freeze([
     'Ionian',
     'Dorian',
     'Phrygian',
@@ -54,7 +60,7 @@ const MAJOR_SCALE_MODES_NAMES = Object.freeze([
     'Locrian'
 ]);
 
-const HARMONIC_MINOR_SCALE_MODES_NAMES = Object.freeze([
+const MODE_NAMES_HARMONIC_MINOR_SCALE = Object.freeze([
     'Ionian #5 / Augmented Major',
     'Altered Dorian',
     'Phrygian Dominant',
@@ -64,7 +70,7 @@ const HARMONIC_MINOR_SCALE_MODES_NAMES = Object.freeze([
     'Locrian #6'
 ]);
 
-const HARMONIC_MAJOR_SCALE_MODES_NAMES = Object.freeze([
+const MODE_NAMES_HARMONIC_MAJOR_SCALE = Object.freeze([
     'Harmonic Major / Ionian b6',
     'Dorian b5 / Locrian #2',
     'Phrygian b4',
@@ -74,7 +80,7 @@ const HARMONIC_MAJOR_SCALE_MODES_NAMES = Object.freeze([
     'Locrian bb7'
 ]);
 
-const MELODIC_MINOR_SCALE_MODES_NAMES = Object.freeze([
+const MODE_NAMES_MELODIC_MINOR_SCALE = Object.freeze([
     'Melodic Minor / Jazz Minor',
     'Dorian b2 / Phrygian #6',
     'Lydian Augmented',
@@ -84,6 +90,19 @@ const MELODIC_MINOR_SCALE_MODES_NAMES = Object.freeze([
     'Super Locrian / Altered dominant',
 ]);
 
+const SCALES_MODES_NAMES = Object.freeze([
+    MODE_NAMES_MAJOR_SCALE,
+    MODE_NAMES_HARMONIC_MINOR_SCALE,
+    MODE_NAMES_HARMONIC_MAJOR_SCALE,
+    MODE_NAMES_MELODIC_MINOR_SCALE
+]);
+
+const SCALES_NAMES_PATTERNS_MODES_NAMES = Object.freeze([
+    Object.freeze([SCALE_NAME_MAJOR,          SCALE_PATTERN_MAJOR,          MODE_NAMES_MAJOR_SCALE]),
+    Object.freeze([SCALE_NAME_HARMONIC_MINOR, SCALE_PATTERN_HARMONIC_MINOR, MODE_NAMES_HARMONIC_MINOR_SCALE]),
+    Object.freeze([SCALE_NAME_HARMONIC_MAJOR, SCALE_PATTERN_HARMONIC_MAJOR, MODE_NAMES_HARMONIC_MAJOR_SCALE]),
+    Object.freeze([SCALE_NAME_MELODIC_MINOR,  SCALE_PATTERN_MELODIC_MINOR,  MODE_NAMES_MELODIC_MINOR_SCALE])
+]);
 
 const offsetsPatternsScalesNames = new Map()
     .set('0,2,4,5,7,9,11',  SCALE_NAMES[0])
@@ -92,34 +111,34 @@ const offsetsPatternsScalesNames = new Map()
     .set('0,2,3,5,7,9,11',  SCALE_NAMES[3]);
 
 const offsetsPatternsModesNames = new Map()
-    .set('0,2,4,5,7,9,11',  MAJOR_SCALE_MODES_NAMES[0])
-    .set('0,2,3,5,7,9,10',  MAJOR_SCALE_MODES_NAMES[1])
-    .set('0,1,3,5,7,8,10',  MAJOR_SCALE_MODES_NAMES[2])
-    .set('0,2,4,6,7,9,11',  MAJOR_SCALE_MODES_NAMES[3])
-    .set('0,2,4,5,7,9,10',  MAJOR_SCALE_MODES_NAMES[4])
-    .set('0,2,3,5,7,8,10',  MAJOR_SCALE_MODES_NAMES[5])
-    .set('0,1,3,5,6,8,10',  MAJOR_SCALE_MODES_NAMES[6])
-    .set('0,2,4,5,8,9,11',  HARMONIC_MINOR_SCALE_MODES_NAMES[0])
-    .set('0,2,3,6,7,9,10',  HARMONIC_MINOR_SCALE_MODES_NAMES[1])
-    .set('0,1,4,5,7,8,10',  HARMONIC_MINOR_SCALE_MODES_NAMES[2])
-    .set('0,3,4,6,7,9,11',  HARMONIC_MINOR_SCALE_MODES_NAMES[3])
-    .set('0,1,3,4,6,8,9',   HARMONIC_MINOR_SCALE_MODES_NAMES[4])
-    .set('0,2,3,5,7,8,11',  HARMONIC_MINOR_SCALE_MODES_NAMES[5])
-    .set('0,1,3,5,6,9,10',  HARMONIC_MINOR_SCALE_MODES_NAMES[6])
-    .set('0,2,4,5,7,8,11',  HARMONIC_MAJOR_SCALE_MODES_NAMES[0])
-    .set('0,2,3,5,6,9,10',  HARMONIC_MAJOR_SCALE_MODES_NAMES[1])
-    .set('0,1,3,4,7,8,10',  HARMONIC_MAJOR_SCALE_MODES_NAMES[2])
-    .set('0,2,3,6,7,9,11',  HARMONIC_MAJOR_SCALE_MODES_NAMES[3])
-    .set('0,1,4,5,7,9,10',  HARMONIC_MAJOR_SCALE_MODES_NAMES[4])
-    .set('0,3,4,6,8,9,11',  HARMONIC_MAJOR_SCALE_MODES_NAMES[5])
-    .set('0,1,3,5,6,8,9',   HARMONIC_MAJOR_SCALE_MODES_NAMES[6])
-    .set('0,2,3,5,7,9,11',  MELODIC_MINOR_SCALE_MODES_NAMES[0])
-    .set('0,1,3,5,7,9,10',  MELODIC_MINOR_SCALE_MODES_NAMES[1])
-    .set('0,2,4,6,8,9,11',  MELODIC_MINOR_SCALE_MODES_NAMES[2])
-    .set('0,2,4,6,7,9,10',  MELODIC_MINOR_SCALE_MODES_NAMES[3])
-    .set('0,2,4,5,7,8,10',  MELODIC_MINOR_SCALE_MODES_NAMES[4])
-    .set('0,2,3,5,6,8,10',  MELODIC_MINOR_SCALE_MODES_NAMES[5])
-    .set('0,1,3,4,6,8,10',  MELODIC_MINOR_SCALE_MODES_NAMES[6]);
+    .set('0,2,4,5,7,9,11',  MODE_NAMES_MAJOR_SCALE[0])
+    .set('0,2,3,5,7,9,10',  MODE_NAMES_MAJOR_SCALE[1])
+    .set('0,1,3,5,7,8,10',  MODE_NAMES_MAJOR_SCALE[2])
+    .set('0,2,4,6,7,9,11',  MODE_NAMES_MAJOR_SCALE[3])
+    .set('0,2,4,5,7,9,10',  MODE_NAMES_MAJOR_SCALE[4])
+    .set('0,2,3,5,7,8,10',  MODE_NAMES_MAJOR_SCALE[5])
+    .set('0,1,3,5,6,8,10',  MODE_NAMES_MAJOR_SCALE[6])
+    .set('0,2,4,5,8,9,11',  MODE_NAMES_HARMONIC_MINOR_SCALE[0])
+    .set('0,2,3,6,7,9,10',  MODE_NAMES_HARMONIC_MINOR_SCALE[1])
+    .set('0,1,4,5,7,8,10',  MODE_NAMES_HARMONIC_MINOR_SCALE[2])
+    .set('0,3,4,6,7,9,11',  MODE_NAMES_HARMONIC_MINOR_SCALE[3])
+    .set('0,1,3,4,6,8,9',   MODE_NAMES_HARMONIC_MINOR_SCALE[4])
+    .set('0,2,3,5,7,8,11',  MODE_NAMES_HARMONIC_MINOR_SCALE[5])
+    .set('0,1,3,5,6,9,10',  MODE_NAMES_HARMONIC_MINOR_SCALE[6])
+    .set('0,2,4,5,7,8,11',  MODE_NAMES_HARMONIC_MAJOR_SCALE[0])
+    .set('0,2,3,5,6,9,10',  MODE_NAMES_HARMONIC_MAJOR_SCALE[1])
+    .set('0,1,3,4,7,8,10',  MODE_NAMES_HARMONIC_MAJOR_SCALE[2])
+    .set('0,2,3,6,7,9,11',  MODE_NAMES_HARMONIC_MAJOR_SCALE[3])
+    .set('0,1,4,5,7,9,10',  MODE_NAMES_HARMONIC_MAJOR_SCALE[4])
+    .set('0,3,4,6,8,9,11',  MODE_NAMES_HARMONIC_MAJOR_SCALE[5])
+    .set('0,1,3,5,6,8,9',   MODE_NAMES_HARMONIC_MAJOR_SCALE[6])
+    .set('0,2,3,5,7,9,11',  MODE_NAMES_MELODIC_MINOR_SCALE[0])
+    .set('0,1,3,5,7,9,10',  MODE_NAMES_MELODIC_MINOR_SCALE[1])
+    .set('0,2,4,6,8,9,11',  MODE_NAMES_MELODIC_MINOR_SCALE[2])
+    .set('0,2,4,6,7,9,10',  MODE_NAMES_MELODIC_MINOR_SCALE[3])
+    .set('0,2,4,5,7,8,10',  MODE_NAMES_MELODIC_MINOR_SCALE[4])
+    .set('0,2,3,5,6,8,10',  MODE_NAMES_MELODIC_MINOR_SCALE[5])
+    .set('0,1,3,4,6,8,10',  MODE_NAMES_MELODIC_MINOR_SCALE[6]);
 
 const offsetsPatternsChordNames = new Map()
     .set('0,4,7',           'Major Triad')
@@ -133,7 +152,6 @@ const offsetsPatternsChordNames = new Map()
     .set('0,3,7,11',        'Minor Major Seventh')
     .set('0,4,8,11',        'Augmented Major Seventh')
     .set('0,3,6,9',         'Diminished Seventh');
-
 
 const keyNamesLength = keyNames.length;
 
@@ -172,9 +190,15 @@ const modeNameForOffsets = (modeOffsets) => {
 
 
 export {
-    SCALE_PATTERN_MAJOR, SCALE_PATTERN_HARMONIC_MINOR, SCALE_PATTERN_HARMONIC_MAJOR, SCALE_PATTERN_MELODIC_MINOR,
-    cyclicKeyIndex, keyNameForIndex, keyNamesLength, indexForKeyName,
-    chordNameForOffsets, chordNameForOffsetsPattern,
-    scaleNameForOffsets, scaleNameForOffsetsPattern,
-    modeNameForOffsets, modeNameForOffsetsPattern
+  SCALE_PATTERN_MAJOR, SCALE_PATTERN_HARMONIC_MINOR, SCALE_PATTERN_HARMONIC_MAJOR, SCALE_PATTERN_MELODIC_MINOR,
+  SCALE_PATTERNS,
+  SCALE_NAME_MAJOR, SCALE_NAME_HARMONIC_MINOR, SCALE_NAME_HARMONIC_MAJOR, SCALE_NAME_MELODIC_MINOR,
+  SCALE_NAMES,
+  MODE_NAMES_MAJOR_SCALE, MODE_NAMES_HARMONIC_MINOR_SCALE, MODE_NAMES_HARMONIC_MAJOR_SCALE, MODE_NAMES_MELODIC_MINOR_SCALE,
+  SCALES_MODES_NAMES,
+  SCALES_NAMES_PATTERNS_MODES_NAMES,
+  cyclicKeyIndex, keyNameForIndex, keyNamesLength, indexForKeyName,
+  chordNameForOffsets, chordNameForOffsetsPattern,
+  scaleNameForOffsets, scaleNameForOffsetsPattern,
+  modeNameForOffsets, modeNameForOffsetsPattern
 };
