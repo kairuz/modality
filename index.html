@@ -73,7 +73,8 @@
 </style>
 <script type="module">
 
-import * as domain from "./domain.js";
+import * as glossary from "./glossary.js";
+import * as scaleLib from "./scale.js";
 import * as util from "./util.js";
 import * as conductorLib from "./conductor.js";
 import initConductor from "./factory.js";
@@ -189,15 +190,15 @@ const uisBufferDiv = document.getElementById('uis-buffer');
 const updateHighlight = (_composerCapture, pianoUi,
                          modeHighlightColor, modeHighlightColorAcc, chordHighlightColor, chordHighlightColorAcc,
                          modeHighlightOctave, chordHighlightOctave) => {
-  const modeOffsets = domain.SCALES[_composerCapture.scaleIndex].getModeOffsets(_composerCapture.modeIndex + _composerCapture.chordIndex);
-  const modeHighlightOffset = (domain.SEMITONES * modeHighlightOctave) + _composerCapture.chordKeyIndex;
+  const modeOffsets = glossary.SCALES[_composerCapture.scaleIndex].getModeOffsets(_composerCapture.modeIndex + _composerCapture.chordIndex);
+  const modeHighlightOffset = (scaleLib.SEMITONES * modeHighlightOctave) + _composerCapture.chordKeyIndex;
   modeOffsets.forEach((modeOffset) => {
     const pianoKeyUi = pianoUi.getPianoKeyUi(modeHighlightOffset + modeOffset);
     pianoKeyUi.setBackground(pianoKeyUi.pianoKey.isAccidental ? modeHighlightColorAcc : modeHighlightColor);
   });
 
-  const chordOffsets = domain.SCALES[_composerCapture.scaleIndex].getChordOffsets(_composerCapture.chordType, _composerCapture.modeIndex + _composerCapture.chordIndex);
-  const chordHighlightOffset = (domain.SEMITONES * chordHighlightOctave) + _composerCapture.chordKeyIndex;
+  const chordOffsets = glossary.SCALES[_composerCapture.scaleIndex].getChordOffsets(_composerCapture.chordType, _composerCapture.modeIndex + _composerCapture.chordIndex);
+  const chordHighlightOffset = (scaleLib.SEMITONES * chordHighlightOctave) + _composerCapture.chordKeyIndex;
   chordOffsets.forEach((chordOffset) => {
     const pianoKeyUi = pianoUi.getPianoKeyUi(chordHighlightOffset + chordOffset);
     pianoKeyUi.setBackground(pianoKeyUi.pianoKey.isAccidental ? chordHighlightColorAcc : chordHighlightColor);
@@ -219,24 +220,22 @@ const start = () => {
   });
   uiDivsBuffer.length = 0;
 
-  audioContextLoader.get().then(() => {
-    pianoUi.forEachPianoKeyUi((pianoKeyUi) => {
-      pianoKeyUi.setBackground(pianoKeyUi.pianoKey.isAccidental ? 'black' : 'white');
-    });
+  pianoUi.forEachPianoKeyUi((pianoKeyUi) => {
+    pianoKeyUi.setBackground(pianoKeyUi.pianoKey.isAccidental ? 'black' : 'white');
+  });
 
-    conductorLoader.get().then(() => {
-      startTime = audioContext.currentTime;
-      conductor.start();
+  conductorLoader.get().then(() => {
+    startTime = audioContext.currentTime;
+    conductor.start();
 
-      const composerCapture = conductor.composer.capture();
+    const composerCapture = conductor.composer.capture();
 
-      captureUi.update(composerCapture);
-      updateHighlight(conductor.composer.capture(), pianoUi, 'lightblue', 'lightblue', 'cornflowerblue', 'cornflowerblue', 1, 2);
+    captureUi.update(composerCapture);
+    updateHighlight(conductor.composer.capture(), pianoUi, 'lightblue', 'lightblue', 'cornflowerblue', 'cornflowerblue', 1, 2);
 
-      const barUi = uiLib.BarUi(0, conductor.player.currentTime - startTime);
-      uiDivsBuffer.push(barUi.div);
-      uisBufferDiv.prepend(barUi.div);
-    });
+    const barUi = uiLib.BarUi(0, conductor.player.currentTime - startTime);
+    uiDivsBuffer.push(barUi.div);
+    uisBufferDiv.prepend(barUi.div);
   });
 };
 

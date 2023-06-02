@@ -1,6 +1,3 @@
-import * as glossary from "./glossary.js";
-
-
 const NOTES = 7;
 const SEMITONES = 12;
 const TETRAD_NOTES = 4;
@@ -163,7 +160,7 @@ const Scale = (pattern) => {
   };
 
 
-  return Object.freeze({
+  return {
     get pattern(){return pattern;},
 
     get flags(){return flags;},
@@ -200,19 +197,12 @@ const Scale = (pattern) => {
     get triadsIntervals(){return triadsIntervals;},
     getTriadIntervals: (index) => triadsIntervals[index % NOTES],
     getTriadInterval: (chordIndex, intervalIndex) => triadsIntervals[chordIndex % NOTES][intervalIndex % TRIAD_NOTES]
-  });
+  };
 
 };
 
-const SCALE_MAJOR           = Scale(glossary.SCALE_PATTERN_MAJOR);
-const SCALE_HARMONIC_MINOR  = Scale(glossary.SCALE_PATTERN_HARMONIC_MINOR);
-const SCALE_HARMONIC_MAJOR  = Scale(glossary.SCALE_PATTERN_HARMONIC_MAJOR);
-const SCALE_MELODIC_MINOR   = Scale(glossary.SCALE_PATTERN_MELODIC_MINOR);
-
-const SCALES = Object.freeze([SCALE_MAJOR, SCALE_HARMONIC_MINOR, SCALE_HARMONIC_MAJOR, SCALE_MELODIC_MINOR]);
 
 export {
-  SCALE_MAJOR, SCALE_HARMONIC_MINOR, SCALE_HARMONIC_MAJOR, SCALE_MELODIC_MINOR, SCALES,
   CHORD_TYPE_TRIAD, CHORD_TYPE_TETRAD, CHORD_TYPES,
   NOTES, SEMITONES, TETRAD_NOTES, TRIAD_NOTES,
   patternToFlags, flagsToModeFlagsAtIndex,

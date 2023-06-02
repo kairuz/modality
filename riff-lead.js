@@ -1,9 +1,26 @@
-import * as domain from "./domain.js";
-import * as playerLib from "./player.js";
-import * as util from "./util.js";
+import {NOTES, CHORD_TYPE_TETRAD, TETRAD_NOTES} from "./scale.js";
+import {PRESET_NAME_GUITAR_ELECTRIC_JAZZ, PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE,
+  PRESET_NAME_GUITAR_NYLON, PRESET_NAME_GUITAR_STEEL, PRESET_NAME_PIANO} from "./player.js";
+import {randomChoice, randomChance, randomInt} from "./util.js";
 import {MIN_INDEX, MAX_INDEX} from "./piano.js"
 import {NOTE_LENGTH_SECS, BAR_LENGTH_SECS} from "./conductor.js";
 
+
+const PRESET_NAMES_WEIGHTED = [
+  PRESET_NAME_GUITAR_ELECTRIC_JAZZ,  // Less chance for electric guitars as they sound bad for lead
+  PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE,
+  ...Array(3).fill(PRESET_NAME_GUITAR_NYLON),
+  ...Array(3).fill(PRESET_NAME_GUITAR_STEEL),
+  ...Array(12).fill(PRESET_NAME_PIANO), // More chance for piano as it sounds best for lead
+];
+
+const VOLUMES = {
+  [PRESET_NAME_GUITAR_ELECTRIC_JAZZ]: 0.5,
+  [PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE]: 0.4,
+  [PRESET_NAME_GUITAR_NYLON]: 0.5,
+  [PRESET_NAME_GUITAR_STEEL]: 0.6,
+  [PRESET_NAME_PIANO]: 0.4
+};
 
 let barsToPlay = 0;
 let currPresetName = null;
@@ -16,22 +33,9 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
     riff: (composer, player, when, bars) => {
 
       if (barsToPlay === 0) {
-        barsToPlay = util.randomChoice([4, 4, 2, 2, 2]);
-        currPresetName = util.randomChoice([
-          playerLib.PRESET_NAME_GUITAR_ELECTRIC_JAZZ,  // Less chance for electric guitars as they sound bad for lead
-          playerLib.PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE,
-          ...Array(3).fill(playerLib.PRESET_NAME_GUITAR_NYLON),
-          ...Array(3).fill(playerLib.PRESET_NAME_GUITAR_STEEL),
-          ...Array(12).fill(playerLib.PRESET_NAME_PIANO), // More chance for piano as it sounds best for lead
-        ]);
-        // override volumes
-        currVolume = {
-          [playerLib.PRESET_NAME_GUITAR_ELECTRIC_JAZZ]: 0.5,
-          [playerLib.PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE]: 0.4,
-          [playerLib.PRESET_NAME_GUITAR_NYLON]: 0.5,
-          [playerLib.PRESET_NAME_GUITAR_STEEL]: 0.6,
-          [playerLib.PRESET_NAME_PIANO]: 0.4
-        }[currPresetName];
+        barsToPlay = randomChoice([4, 4, 2, 2, 2]);
+        currPresetName = randomChoice(PRESET_NAMES_WEIGHTED);
+        currVolume = VOLUMES[currPresetName];
       }
 
       barsToPlay--;
@@ -45,7 +49,7 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
           return;
         }
 
-        const duration = durationOverride === null ? util.randomChoice(durations) : durationOverride;
+        const duration = durationOverride === null ? randomChoice(durations) : durationOverride;
 
         const volume = volumeOverride !== null ? volumeOverride : currVolume;
         player.play(currPresetName, when + whenOffset, duration, pitch, volume);
@@ -54,13 +58,13 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
 
       const riffA = () => {
         let accTime = 0;
-        const plucks = ((3 * 2) - 2) + ((domain.NOTES * 2) - 2);
+        const plucks = ((3 * 2) - 2) + ((NOTES * 2) - 2);
         const pluckNoteLengthSecs = BAR_LENGTH_SECS / plucks;
 
-        const isTetrad = composer.chordType === domain.CHORD_TYPE_TETRAD;
+        const isTetrad = composer.chordType === CHORD_TYPE_TETRAD;
 
         for (let i = isTetrad ? 1 : 0; i < composer.chordOffsets.length; i++) {
-          if (util.randomChance(3)) {
+          if (randomChance(3)) {
             continue;
           }
           queueLead(accTime, composer.chordOffsets[i] + (12 * composer.octave) + composer.chordKeyIndex);
@@ -68,7 +72,7 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
         }
 
         for (let i = composer.chordOffsets.length - 2; i > 0; i--) {
-          if (util.randomChance(3)) {
+          if (randomChance(3)) {
             continue;
           }
           queueLead(accTime, composer.chordOffsets[i] + (12 * composer.octave) + composer.chordKeyIndex);
@@ -76,7 +80,7 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
         }
 
         for (let i = 0; i < composer.modeOffsets.length; i++) {
-          if (util.randomChance(3)) {
+          if (randomChance(3)) {
             continue;
           }
           queueLead(accTime, composer.modeOffsets[i] + (12 * composer.octave) + composer.chordKeyIndex);
@@ -84,7 +88,7 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
         }
 
         for (let i = composer.modeOffsets.length - 2; i >= 0; i--) {
-          if (util.randomChance(3)) {
+          if (randomChance(3)) {
             continue;
           }
           queueLead(accTime, composer.modeOffsets[i] + (12 * composer.octave) + composer.chordKeyIndex);
@@ -95,20 +99,20 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
       const riffBa = () => {
         let accTime = 0;
         let addOctaves = 0;
-        let i = util.randomInt(domain.NOTES);
+        let i = randomInt(NOTES);
 
         while (accTime < (BAR_LENGTH_SECS / 2)) {
 
-          if (i >= domain.NOTES) {
+          if (i >= NOTES) {
             i = 0;
             addOctaves++;
           }
 
           queueLead(accTime, composer.modeOffsets[i] + (12 * (composer.octave + addOctaves)) + composer.chordKeyIndex);
 
-          accTime += util.randomChance(2) ? (NOTE_LENGTH_SECS / 3) : NOTE_LENGTH_SECS / 2.5;
+          accTime += randomChance(2) ? (NOTE_LENGTH_SECS / 3) : NOTE_LENGTH_SECS / 2.5;
 
-          const skipRand = util.randomInt(3);
+          const skipRand = randomInt(3);
           if (skipRand === 2) {
             i++;
             i++;
@@ -120,17 +124,17 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
         }
 
         addOctaves = 2;
-        i = util.randomInt(domain.NOTES);
+        i = randomInt(NOTES);
 
         while (accTime < BAR_LENGTH_SECS) {
           if (i <= -1) {
-            i = domain.NOTES - 1;
+            i = NOTES - 1;
             addOctaves--;
           }
           queueLead(accTime, composer.modeOffsets[i] + (12 * (composer.octave + addOctaves)) + composer.chordKeyIndex);
 
-          accTime += util.randomChance(2) ? (NOTE_LENGTH_SECS / 3) : NOTE_LENGTH_SECS / 2.5;
-          const skipRand = util.randomInt(3);
+          accTime += randomChance(2) ? (NOTE_LENGTH_SECS / 3) : NOTE_LENGTH_SECS / 2.5;
+          const skipRand = randomInt(3);
           if (skipRand === 2) {
             i--;
             i--;
@@ -145,7 +149,7 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
       const riffBb = () => {
         let accTime = 0;
         let addOctaves = 1;
-        let max = util.randomInt(composer.modeOffsets.length);
+        let max = randomInt(composer.modeOffsets.length);
         let i = max;
 
         while (accTime < (BAR_LENGTH_SECS / 2)) {
@@ -157,9 +161,9 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
 
           queueLead(accTime, composer.modeOffsets[i] + (12 * (composer.octave + addOctaves)) + composer.chordKeyIndex);
 
-          accTime += util.randomChance(2) ? (NOTE_LENGTH_SECS / 3) : NOTE_LENGTH_SECS / 2.5;
+          accTime += randomChance(2) ? (NOTE_LENGTH_SECS / 3) : NOTE_LENGTH_SECS / 2.5;
 
-          const skipRand = util.randomInt(3);
+          const skipRand = randomInt(3);
           if (skipRand === 2) {
             i--;
             i--;
@@ -171,7 +175,7 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
         }
 
         addOctaves = 0;
-        max = util.randomInt(domain.NOTES);
+        max = randomInt(NOTES);
         i = 0;
 
         while (accTime < BAR_LENGTH_SECS) {
@@ -181,8 +185,8 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
           }
           queueLead(accTime, composer.modeOffsets[i] + (12 * (composer.octave + addOctaves)) + composer.chordKeyIndex);
 
-          accTime += util.randomChance(2) ? (NOTE_LENGTH_SECS / 3) : NOTE_LENGTH_SECS / 2.5;
-          const skipRand = util.randomInt(3);
+          accTime += randomChance(2) ? (NOTE_LENGTH_SECS / 3) : NOTE_LENGTH_SECS / 2.5;
+          const skipRand = randomInt(3);
           if (skipRand === 2) {
             i++;
             i++;
@@ -195,17 +199,17 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
       };
 
       const riffCa = () => {
-        const chordCount = util.randomChoice([1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6]);
-        const pluckNoteLengthSecs = (BAR_LENGTH_SECS / (domain.TETRAD_NOTES * chordCount));
+        const chordCount = randomChoice([1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6]);
+        const pluckNoteLengthSecs = (BAR_LENGTH_SECS / (TETRAD_NOTES * chordCount));
 
         let accTime = 0;
         for (let i = chordCount; i >= 0; i--) {
-          if (util.randomChance(6)) {
+          if (randomChance(6)) {
             continue;
           }
           const relativeChordOffsets = composer.getRelativeChordOffsets(i);
           relativeChordOffsets.forEach((co) => {
-            if (util.randomChance(4)) {
+            if (randomChance(4)) {
               return;
             }
             queueLead(accTime, co + (12 * composer.octave) + composer.chordKeyIndex);
@@ -215,17 +219,17 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
       };
 
       const riffCb = () => {
-        const chordCount = util.randomChoice([1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6]);
-        const pluckNoteLengthSecs = (BAR_LENGTH_SECS / (domain.TETRAD_NOTES * chordCount));
+        const chordCount = randomChoice([1, 2, 2, 2, 2, 3, 3, 4, 4, 4, 5, 5, 6]);
+        const pluckNoteLengthSecs = (BAR_LENGTH_SECS / (TETRAD_NOTES * chordCount));
 
         let accTime = 0;
         for (let i = 0; i < chordCount; i++) {
-          if (util.randomChance(6)) {
+          if (randomChance(6)) {
             continue;
           }
           const relativeChordOffsets = composer.getRelativeChordOffsets(i);
           relativeChordOffsets.forEach((co) => {
-            if (util.randomChance(4)) {
+            if (randomChance(4)) {
               return;
             }
             queueLead(accTime, co + (12 * composer.octave) + composer.chordKeyIndex);
@@ -235,73 +239,73 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
       };
 
       const riffDa = () => {
-        const addOctave = util.randomInt(3);
-        const chordCount = util.randomChoice([6, 7]);
+        const addOctave = randomInt(3);
+        const chordCount = randomChoice([6, 7]);
         const pluckNoteLengthSecs = BAR_LENGTH_SECS / (chordCount * 4);
 
         let accTime = 0;
         for (let i = 0; i < chordCount; i++) {
-          if (util.randomChance(10)) {
+          if (randomChance(10)) {
             accTime += pluckNoteLengthSecs * 3;
             continue;
           }
           const relativeChordOffsets = composer.getRelativeChordOffsets(i);
-          let randomInt = util.randomInt(3);
+          let _randomInt = randomInt(3);
           for (let j = 0; j < 3; j++) {
-            queueLead(accTime, relativeChordOffsets[util.randomInt(3)] + (12 * (composer.octave + addOctave)) + composer.chordKeyIndex);
-            accTime += pluckNoteLengthSecs + util.randomChoice([pluckNoteLengthSecs / 3, 0]);
-            randomInt = util.randomInt(3, randomInt);
+            queueLead(accTime, relativeChordOffsets[randomInt(3)] + (12 * (composer.octave + addOctave)) + composer.chordKeyIndex);
+            accTime += pluckNoteLengthSecs + randomChoice([pluckNoteLengthSecs / 3, 0]);
+            _randomInt = randomInt(3, _randomInt);
           }
         }
       };
 
       const riffDb = () => {
-        const addOctave = util.randomInt(3);
-        const chordCount = util.randomChoice([6, 7]);
+        const addOctave = randomInt(3);
+        const chordCount = randomChoice([6, 7]);
         const pluckNoteLengthSecs = BAR_LENGTH_SECS / (chordCount * 4);
 
         let accTime = 0;
         for (let i = chordCount - 1; i >= 0; i--) {
-          if (util.randomChance(10)) {
+          if (randomChance(10)) {
             accTime += pluckNoteLengthSecs * 3;
             continue;
           }
           const relativeChordOffsets = composer.getRelativeChordOffsets(i);
-          let randomInt = util.randomInt(3);
+          let _randomInt = randomInt(3);
           for (let j = 0; j < 3; j++) {
-            queueLead(accTime, relativeChordOffsets[util.randomInt(3)] + (12 * (composer.octave + addOctave)) + composer.chordKeyIndex);
-            accTime += pluckNoteLengthSecs + util.randomChoice([pluckNoteLengthSecs / 3, 0]);
-            randomInt = util.randomInt(3, randomInt);
+            queueLead(accTime, relativeChordOffsets[randomInt(3)] + (12 * (composer.octave + addOctave)) + composer.chordKeyIndex);
+            accTime += pluckNoteLengthSecs + randomChoice([pluckNoteLengthSecs / 3, 0]);
+            _randomInt = randomInt(3, _randomInt);
           }
         }
       };
 
       const riffEa = () => {
-        const chordCount = util.randomChoice([7, 8, 9, 10]);
-        const pluckNoteLengthSecs = BAR_LENGTH_SECS / util.randomChoice([chordCount + util.randomInt(2), chordCount]);
+        const chordCount = randomChoice([7, 8, 9, 10]);
+        const pluckNoteLengthSecs = BAR_LENGTH_SECS / randomChoice([chordCount + randomInt(2), chordCount]);
         const trillGapSecs = pluckNoteLengthSecs / 10;
 
         let accTime = 0;
         for (let i = 0; i < chordCount; i++) {
-          if (util.randomChance(4)) {
-            accTime += util.randomChance(2) ? pluckNoteLengthSecs : pluckNoteLengthSecs / 2;
+          if (randomChance(4)) {
+            accTime += randomChance(2) ? pluckNoteLengthSecs : pluckNoteLengthSecs / 2;
             continue;
           }
-          const addOctave = util.randomInt(2);
-          const minusOctave = util.randomInt(2);
+          const addOctave = randomInt(2);
+          const minusOctave = randomInt(2);
           const relativeChordOffsets = composer.getRelativeChordOffsets(i);
-          (util.randomChance(3) ? [...relativeChordOffsets].reverse() : relativeChordOffsets).forEach((co, j) => {
-            if (util.randomChance(3)) {
+          (randomChance(3) ? [...relativeChordOffsets].reverse() : relativeChordOffsets).forEach((co, j) => {
+            if (randomChance(3)) {
               return;
             }
             queueLead(
                 accTime + (j * trillGapSecs),
                 co + (12 * (composer.octave + addOctave - minusOctave)) + composer.chordKeyIndex,
-                util.randomChoice([0.3, 0.5, 0.7]),
+                randomChoice([0.3, 0.5, 0.7]),
                 currVolume - 0.2
             );
           });
-          if (util.randomChance(3)) {
+          if (randomChance(3)) {
             queueLead(
                 accTime, relativeChordOffsets[0] + (12 * (composer.octave - 2) + composer.chordKeyIndex), 0.8);
           }
@@ -310,31 +314,31 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
       };
 
       const riffEb = () => {
-        const chordCount = util.randomChoice([7, 8, 9, 10]);
-        const pluckNoteLengthSecs = BAR_LENGTH_SECS / util.randomChoice([chordCount + util.randomInt(2), chordCount]);
+        const chordCount = randomChoice([7, 8, 9, 10]);
+        const pluckNoteLengthSecs = BAR_LENGTH_SECS / randomChoice([chordCount + randomInt(2), chordCount]);
         const trillGapSecs = pluckNoteLengthSecs / 10;
 
         let accTime = 0;
         for (let i = chordCount - 1; i > 0; i--) {
-          if (util.randomChance(4)) {
-            accTime += util.randomChance(2) ? pluckNoteLengthSecs : pluckNoteLengthSecs / 2;
+          if (randomChance(4)) {
+            accTime += randomChance(2) ? pluckNoteLengthSecs : pluckNoteLengthSecs / 2;
             continue;
           }
-          const addOctave = util.randomInt(2);
-          const minusOctave = util.randomInt(2);
+          const addOctave = randomInt(2);
+          const minusOctave = randomInt(2);
           const relativeChordOffsets = composer.getRelativeChordOffsets(i);
-          (util.randomChance(3) ? [...relativeChordOffsets].reverse() : relativeChordOffsets).forEach((co, j) => {
-            if (util.randomChance(3)) {
+          (randomChance(3) ? [...relativeChordOffsets].reverse() : relativeChordOffsets).forEach((co, j) => {
+            if (randomChance(3)) {
               return;
             }
             queueLead(
                 accTime + (j * trillGapSecs),
                 co + (12 * (composer.octave + addOctave - minusOctave)) + composer.chordKeyIndex,
-                util.randomChoice([0.3, 0.5, 0.7]),
+                randomChoice([0.3, 0.5, 0.7]),
                 currVolume - 0.2
             );
           });
-          if (util.randomChance(3)) {
+          if (randomChance(3)) {
             queueLead(
                 accTime, relativeChordOffsets[0] + (12 * (composer.octave - 2) + composer.chordKeyIndex), 0.8);
           }
@@ -342,10 +346,9 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
         }
       };
 
-
       const riffF = () => {};
 
-      const riff = util.randomChoice([
+      const riff = randomChoice([
         ...Array(4).fill(riffA),
         ...Array(4).fill(riffBa),
         ...Array(3).fill(riffBb),
@@ -361,6 +364,7 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
     }
   }
 };
+
 
 export {
   LeadRiffer, defaultQueueCallback

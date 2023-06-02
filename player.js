@@ -71,11 +71,11 @@ const initPlayerContext = (audioContext) => {
 };
 
 const PlayerContext = (audioContext, webAudioFontPlayer, presets) => {
-  return Object.freeze({
+  return {
     get audioContext(){return audioContext;},
     get webAudioFontPlayer(){return webAudioFontPlayer},
     get presets(){return presets;}
-  });
+  };
 };
 
 const Player = (playerContext) => {
@@ -88,7 +88,7 @@ const Player = (playerContext) => {
     playingNodes.add(node);
   };
 
-  return Object.freeze({
+  return {
     play: (presetName, when, duration, pitch, volume = 1) => {
       if (typeof pitch === 'undefined' && !(presetName in PITCHES)) {
         throw 'invalid pitch';
@@ -123,7 +123,7 @@ const Player = (playerContext) => {
     get presets(){return playerContext.presets;},
     get webAudioFontPlayer(){return playerContext.webAudioFontPlayer;},
     get audioContext(){return playerContext.audioContext;}
-  });
+  };
 };
 
 const initPlayer = (audioContext) => {

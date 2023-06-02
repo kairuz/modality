@@ -12,4 +12,4 @@ The library supports changing keys, scales, modes, and chords.
 
 The repo also contains [sample usage with a virtual piano](https://kairuz.github.io/modality) demonstrating this functionality.
 
-MIDI playing is implemented using a fork of [surikov's WebAudioFont](https://github.com/surikov/webaudiofont).
+MIDI playing is implemented using a [fork](https://github.com/kairuz/webaudiofont) of [surikov's WebAudioFont](https://github.com/surikov/webaudiofont).

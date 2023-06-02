@@ -1,4 +1,4 @@
-import * as domain from "./domain.js";
+import {SEMITONES} from "./scale.js";
 import * as glossary from "./glossary.js";
 
 
@@ -15,24 +15,22 @@ const Piano = (octaves = OCTAVES) => {
     const number = index + 1;
     const keyIndex = index + MIN_INDEX;
     const key = glossary.keyNameForIndex(keyIndex);
-    const octave = Math.trunc(keyIndex / domain.SEMITONES);
-    const isAccidental = domain.SCALE_MAJOR.getFlag(keyIndex) === 0;
+    const octave = Math.trunc(keyIndex / SEMITONES);
+    const isAccidental = glossary.SCALE_MAJOR.getFlag(keyIndex) === 0;
     const isDiatonic = !isAccidental;
-    return Object.freeze({
+
+    return {
       get index(){return index;},
       get number(){return number;},
       get keyIndex(){return keyIndex;},
       get key(){return key;},
       get octave(){return octave;},
       get isDiatonic(){return isDiatonic;},
-      get isAccidental(){return isAccidental;},
-      toString: function(){
-        return `number=${number},ki=${keyIndex},keyOct=${this.key}-${octave},isAcc=${this.isAccidental}`
-      }
-    });
+      get isAccidental(){return isAccidental;}
+    };
   };
 
-  const pianoKeys = Object.freeze(Array.from(Array(octaves * domain.SEMITONES).keys()).map((_, i) => {
+  const pianoKeys = Object.freeze(Array.from(Array(octaves * SEMITONES).keys()).map((_, i) => {
     if (i < MIN_INDEX || i > MAX_INDEX) {
       return null;
     }
@@ -48,7 +46,7 @@ const Piano = (octaves = OCTAVES) => {
 
   }));
 
-  return Object.freeze({
+  return {
     getPianoKeyUi(index){
       if (!Number.isInteger(index) || index < MIN_INDEX || index > MAX_INDEX) {
         throw 'invalid index';
@@ -69,7 +67,7 @@ const Piano = (octaves = OCTAVES) => {
 
     get diatonics(){return diatonics;},
     get accidentals(){return accidentals;}
-  });
+  };
 };
 
 
@@ -105,7 +103,7 @@ const PianoUi = (piano = Piano()) => {
     pianoKeyUiDiv.style.height = `${keyHeight}px`;
     pianoKeyUiDiv.style.background = background;
 
-    return Object.freeze({
+    return {
       get div(){return pianoKeyUiDiv;},
       get pianoKey(){return pianoKey;},
       select: () => {
@@ -118,7 +116,7 @@ const PianoUi = (piano = Piano()) => {
         background = color;
         pianoKeyUiDiv.style.background = color;
       }
-    });
+    };
   };
 
   const pianoKeyUis = Object.freeze(Array.from(Array(MAX_INDEX + 1).keys()).map((_, i) => {
@@ -159,7 +157,7 @@ const PianoUi = (piano = Piano()) => {
 
   }
 
-  return Object.freeze({
+  return {
     get div(){return pianoUiDiv;},
     get piano(){return piano;},
     getPianoKeyUi(index){
@@ -179,7 +177,7 @@ const PianoUi = (piano = Piano()) => {
         callback(pianoKeyUi, ii);
       }
     }
-  });
+  };
 };
 
 export {
