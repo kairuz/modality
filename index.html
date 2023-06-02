@@ -74,14 +74,37 @@
 <script type="module">
 
 import * as domain from "./domain.js";
+import * as util from "./util.js";
 import * as conductorLib from "./conductor.js";
-import buildConductor from "./factory.js";
+import initConductor from "./factory.js";
 
 import * as pianoLib from "./piano.js";
 import * as uiLib from "./ui.js";
 
 
-let audioContext = new AudioContext();
+let audioContext = null;
+
+let audioContextLoader = util.LazyLoader(() => {
+  return new Promise((resolve) => {
+    audioContext = new AudioContext();
+    resolve(audioContext);
+  });
+});
+
+let conductor = null;
+
+let conductorLoader = util.LazyLoader(() => {
+  return new Promise((resolve) => {
+    audioContextLoader.get().then(() => {
+      initConductor(audioContext, leadRifferQueueCallback, conductorChangeCallback)
+          .then((_conductor) => {
+            conductor = _conductor;
+            resolve(_conductor);
+          });
+    });
+  });
+});
+
 let startTime = null;
 
 const leadRifferQueueCallback = (currPresetName, currentTime, when, whenOffset, duration, pitch, currVolume) => {
@@ -107,8 +130,6 @@ const leadRifferQueueCallback = (currPresetName, currentTime, when, whenOffset, 
 
 const conductorChangeCallback = (changeType, currentTime, when, bar, composerCapture, composerPrevCapture) => {
   setTimeout(() => {
-
-
     updateHighlight(composerPrevCapture, pianoUi, 'white', 'black', 'white', 'black', 1, 2);
     updateHighlight(composerCapture, pianoUi, 'lightblue', 'lightblue', 'cornflowerblue', 'cornflowerblue', 1, 2);
 
@@ -152,8 +173,6 @@ const conductorChangeCallback = (changeType, currentTime, when, bar, composerCap
   }, ((when - currentTime) - 250) * 1000);
 };
 
-const conductor = buildConductor(audioContext, leadRifferQueueCallback, conductorChangeCallback);
-
 const uiDivsBuffer = [];
 const UIS_BUFFER_LIMIT = 40;
 
@@ -188,7 +207,7 @@ const updateHighlight = (_composerCapture, pianoUi,
 const leadRifferTimeoutIds = new Set();
 
 const stop = () => {
-  conductor.stop();
+  conductor?.stop();
   leadRifferTimeoutIds.forEach((timeoutId) => clearTimeout(timeoutId));
   leadRifferTimeoutIds.clear();
 };
@@ -200,12 +219,12 @@ const start = () => {
   });
   uiDivsBuffer.length = 0;
 
-  audioContext.resume().then(() => {
+  audioContextLoader.get().then(() => {
     pianoUi.forEachPianoKeyUi((pianoKeyUi) => {
       pianoKeyUi.setBackground(pianoKeyUi.pianoKey.isAccidental ? 'black' : 'white');
     });
 
-    conductor.player.contextInitLoader.get().then(() => {
+    conductorLoader.get().then(() => {
       startTime = audioContext.currentTime;
       conductor.start();
 

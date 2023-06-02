@@ -1,85 +1,85 @@
 import WebAudioFontPlayer from "https://kairuz.github.io/webaudiofont/npm/dist/player.js";
-import * as util from "./util.js";
 
 
 const STRUM_DIRECTION_DOWN = 0;
 const STRUM_DIRECTION_UP = 1;
 
-const PRESET_NAME_PIANO = 'piano';
-const PRESET_NAME_GUITAR_NYLON = 'guitar-nylon';
-const PRESET_NAME_GUITAR_STEEL = 'guitar-steel';
-const PRESET_NAME_GUITAR_ELECTRIC_JAZZ = 'guitar-electric-jazz';
+const PRESET_NAME_PIANO                     = 'piano';
+const PRESET_NAME_GUITAR_NYLON              = 'guitar-nylon';
+const PRESET_NAME_GUITAR_STEEL              = 'guitar-steel';
+const PRESET_NAME_GUITAR_ELECTRIC_JAZZ      = 'guitar-electric-jazz';
 const PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE = 'guitar-electric-overdrive';
-const PRESET_NAME_GUITAR_BASS = 'guitar-bass';
-const PRESET_NAME_DRUMS_KICK = 'drums-kick';
-const PRESET_NAME_DRUMS_SNARE = 'drums-snare';
-const PRESET_NAME_DRUMS_CRASH = 'drums-crash';
-const PRESET_NAME_DRUMS_HIHAT = 'drums-hihat';
-const PRESET_NAME_DRUMS_HIHAT_OPEN = 'drums-hihat_open';
+const PRESET_NAME_GUITAR_BASS               = 'guitar-bass';
+const PRESET_NAME_DRUMS_KICK                = 'drums-kick';
+const PRESET_NAME_DRUMS_SNARE               = 'drums-snare';
+const PRESET_NAME_DRUMS_CRASH               = 'drums-crash';
+const PRESET_NAME_DRUMS_HIHAT               = 'drums-hihat';
+const PRESET_NAME_DRUMS_HIHAT_OPEN          = 'drums-hihat_open';
 const PRESET_NAMES = Object.freeze([PRESET_NAME_PIANO, PRESET_NAME_GUITAR_NYLON, PRESET_NAME_GUITAR_STEEL,
-                                    PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE, PRESET_NAME_GUITAR_ELECTRIC_JAZZ, PRESET_NAME_GUITAR_BASS,
+                                    PRESET_NAME_GUITAR_ELECTRIC_JAZZ, PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE, PRESET_NAME_GUITAR_BASS,
                                     PRESET_NAME_DRUMS_KICK, PRESET_NAME_DRUMS_SNARE,
                                     PRESET_NAME_DRUMS_CRASH, PRESET_NAME_DRUMS_HIHAT, PRESET_NAME_DRUMS_HIHAT_OPEN]);
 
-const webAudioFontPresetPathsAndVarNames = Object.freeze([
-  ['https://surikov.github.io/webaudiofontdata/sound/0000_JCLive_sf2_file.js',            '_tone_0000_JCLive_sf2_file'],            // piano
-  ['https://surikov.github.io/webaudiofontdata/sound/0253_Acoustic_Guitar_sf2_file.js',   '_tone_0253_Acoustic_Guitar_sf2_file'],   // guitar nylon
-  ['https://surikov.github.io/webaudiofontdata/sound/0250_LK_AcousticSteel_SF2_file.js',  '_tone_0250_LK_AcousticSteel_SF2_file'],  // guitar steel
-  ['https://surikov.github.io/webaudiofontdata/sound/0260_SoundBlasterOld_sf2.js',        '_tone_0260_SoundBlasterOld_sf2'],        // guitar electric jazz
-  ['https://surikov.github.io/webaudiofontdata/sound/0290_SoundBlasterOld_sf2.js',        '_tone_0290_SoundBlasterOld_sf2'],        // guitar electric overdrive
-  ['https://surikov.github.io/webaudiofontdata/sound/0330_Aspirin_sf2_file.js',           '_tone_0330_Aspirin_sf2_file'],           // guitar bass
-  ['https://surikov.github.io/webaudiofontdata/sound/12836_11_Chaos_sf2_file.js',         '_drum_36_11_Chaos_sf2_file'],            // drums-kick
-  ['https://surikov.github.io/webaudiofontdata/sound/12840_11_Chaos_sf2_file.js',         '_drum_40_11_Chaos_sf2_file'],            // drums-snare
-  ['https://surikov.github.io/webaudiofontdata/sound/12849_11_Chaos_sf2_file.js',         '_drum_49_11_Chaos_sf2_file'],            // drums-crash
-  ['https://surikov.github.io/webaudiofontdata/sound/12842_11_Chaos_sf2_file.js',         '_drum_42_11_Chaos_sf2_file'],            // drums-hihat
-  ['https://surikov.github.io/webaudiofontdata/sound/12846_11_Chaos_sf2_file.js',         '_drum_46_11_Chaos_sf2_file'],            // drums-hihat_open
-]);
+const PRESET_PATHS_AND_VAR_NAMES = Object.freeze({
+  [PRESET_NAME_PIANO]:                      Object.freeze(['https://surikov.github.io/webaudiofontdata/sound/0000_JCLive_sf2_file.js',            '_tone_0000_JCLive_sf2_file']),
+  [PRESET_NAME_GUITAR_NYLON]:               Object.freeze(['https://surikov.github.io/webaudiofontdata/sound/0253_Acoustic_Guitar_sf2_file.js',   '_tone_0253_Acoustic_Guitar_sf2_file']),
+  [PRESET_NAME_GUITAR_STEEL]:               Object.freeze(['https://surikov.github.io/webaudiofontdata/sound/0250_LK_AcousticSteel_SF2_file.js',  '_tone_0250_LK_AcousticSteel_SF2_file']),
+  [PRESET_NAME_GUITAR_ELECTRIC_JAZZ]:       Object.freeze(['https://surikov.github.io/webaudiofontdata/sound/0260_SoundBlasterOld_sf2.js',        '_tone_0260_SoundBlasterOld_sf2']),
+  [PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE]:  Object.freeze(['https://surikov.github.io/webaudiofontdata/sound/0290_SoundBlasterOld_sf2.js',        '_tone_0290_SoundBlasterOld_sf2']),
+  [PRESET_NAME_GUITAR_BASS]:                Object.freeze(['https://surikov.github.io/webaudiofontdata/sound/0330_Aspirin_sf2_file.js',           '_tone_0330_Aspirin_sf2_file']),
+  [PRESET_NAME_DRUMS_KICK]:                 Object.freeze(['https://surikov.github.io/webaudiofontdata/sound/12836_11_Chaos_sf2_file.js',         '_drum_36_11_Chaos_sf2_file']),
+  [PRESET_NAME_DRUMS_SNARE]:                Object.freeze(['https://surikov.github.io/webaudiofontdata/sound/12840_11_Chaos_sf2_file.js',         '_drum_40_11_Chaos_sf2_file']),
+  [PRESET_NAME_DRUMS_CRASH]:                Object.freeze(['https://surikov.github.io/webaudiofontdata/sound/12849_11_Chaos_sf2_file.js',         '_drum_49_11_Chaos_sf2_file']),
+  [PRESET_NAME_DRUMS_HIHAT]:                Object.freeze(['https://surikov.github.io/webaudiofontdata/sound/12842_11_Chaos_sf2_file.js',         '_drum_42_11_Chaos_sf2_file']),
+  [PRESET_NAME_DRUMS_HIHAT_OPEN]:           Object.freeze(['https://surikov.github.io/webaudiofontdata/sound/12846_11_Chaos_sf2_file.js',         '_drum_46_11_Chaos_sf2_file'])
+});
 
-const Player = (audioContext) => {
+const PITCHES = Object.freeze({
+  [PRESET_NAME_DRUMS_KICK]:       36,
+  [PRESET_NAME_DRUMS_SNARE]:      40,
+  [PRESET_NAME_DRUMS_CRASH]:      49,
+  [PRESET_NAME_DRUMS_HIHAT]:      42,
+  [PRESET_NAME_DRUMS_HIHAT_OPEN]: 46
+});
 
-  const playingNodes = new Set();
+const initPlayerContext = (audioContext) => {
+  return new Promise((resolve, reject) => {
+    if (audioContext.state !== 'running') {
+      reject('invalid audioContext state');
+      return;
+    }
 
-  let webAudioFontPlayer = null;
-  let presets;
-  let pitches;
+    const webAudioFontPlayer = new WebAudioFontPlayer();
 
-  const contextInitLoader = util.LazyLoader(() => {
-    return new Promise((resolve, reject) => {
-      if (audioContext.state !== 'running') {
-        reject('invalid audioContext state');
-      }
+    PRESET_NAMES.forEach((presetName) => {
+      const [presetPath, presetVarName] = PRESET_PATHS_AND_VAR_NAMES[presetName];
+      webAudioFontPlayer.loader.startLoad(audioContext, presetPath, presetVarName);
+    });
 
-      webAudioFontPlayer = new WebAudioFontPlayer();
+    webAudioFontPlayer.loader.waitLoad(() => {
+      const presets = Object.freeze(PRESET_NAMES.reduce((acc, presetName) => {
+        const [, presetVarName] = PRESET_PATHS_AND_VAR_NAMES[presetName];
+        acc[presetName] = window[presetVarName];
+        return acc;
+      }, {}));
 
-      webAudioFontPresetPathsAndVarNames.forEach(([webAudioFontPresetPath, webAudioFontPresetVarName]) =>
-        webAudioFontPlayer.loader.startLoad(audioContext, webAudioFontPresetPath, webAudioFontPresetVarName));
+      const playerContext = PlayerContext(audioContext, webAudioFontPlayer, presets);
 
-      webAudioFontPlayer.loader.waitLoad(() => {
-        presets = Object.freeze({
-          [PRESET_NAME_PIANO]:                      window['_tone_0000_JCLive_sf2_file'],
-          [PRESET_NAME_GUITAR_NYLON]:               window['_tone_0253_Acoustic_Guitar_sf2_file'],
-          [PRESET_NAME_GUITAR_STEEL]:               window['_tone_0250_LK_AcousticSteel_SF2_file'],
-          [PRESET_NAME_GUITAR_ELECTRIC_JAZZ]:       window['_tone_0260_SoundBlasterOld_sf2'],
-          [PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE]:  window['_tone_0290_SoundBlasterOld_sf2'],
-          [PRESET_NAME_GUITAR_BASS]:                window['_tone_0330_Aspirin_sf2_file'],
-          [PRESET_NAME_DRUMS_KICK]:                 window['_drum_36_11_Chaos_sf2_file'],
-          [PRESET_NAME_DRUMS_SNARE]:                window['_drum_40_11_Chaos_sf2_file'],
-          [PRESET_NAME_DRUMS_CRASH]:                window['_drum_49_11_Chaos_sf2_file'],
-          [PRESET_NAME_DRUMS_HIHAT]:                window['_drum_42_11_Chaos_sf2_file'],
-          [PRESET_NAME_DRUMS_HIHAT_OPEN]:           window['_drum_46_11_Chaos_sf2_file']
-        });
-        pitches = Object.freeze({
-          [PRESET_NAME_DRUMS_KICK]: 36,
-          [PRESET_NAME_DRUMS_SNARE]: 40,
-          [PRESET_NAME_DRUMS_CRASH]: 49,
-          [PRESET_NAME_DRUMS_HIHAT]: 42,
-          [PRESET_NAME_DRUMS_HIHAT_OPEN]: 46
-        });
-
-        resolve();
-      });
+      resolve(playerContext);
     });
   });
+};
+
+const PlayerContext = (audioContext, webAudioFontPlayer, presets) => {
+  return Object.freeze({
+    get audioContext(){return audioContext;},
+    get webAudioFontPlayer(){return webAudioFontPlayer},
+    get presets(){return presets;}
+  });
+};
+
+const Player = (playerContext) => {
+  const playingNodes = new Set();
 
   const addPlayingNode = (node) => {
     node.addEventListener('ended', () => {
@@ -90,28 +90,28 @@ const Player = (audioContext) => {
 
   return Object.freeze({
     play: (presetName, when, duration, pitch, volume = 1) => {
-      if (typeof pitch === 'undefined' && !(presetName in pitches)) {
+      if (typeof pitch === 'undefined' && !(presetName in PITCHES)) {
         throw 'invalid pitch';
       }
       if (typeof pitch === 'undefined') {
-        pitch = pitches[presetName];
+        pitch = PITCHES[presetName];
       }
-      contextInitLoader.get().then(() => {
-        const gainNode = webAudioFontPlayer.queueWaveTable(
-            audioContext, audioContext.destination,
-            presets[presetName], when,  pitch, duration, volume);
+
+      const gainNode = playerContext.webAudioFontPlayer.queueWaveTable(
+          playerContext.audioContext, playerContext.audioContext.destination,
+          playerContext.presets[presetName], when,  pitch, duration, volume);
+      const node = gainNode.audioBufferSourceNode;
+      addPlayingNode(node);
+    },
+    strum: (presetName, strumDirection, when, duration, PITCHES, volume = 1) => {
+      const strumFn = strumDirection === STRUM_DIRECTION_UP ?
+                      playerContext.webAudioFontPlayer.queueStrumUp :
+                      playerContext.webAudioFontPlayer.queueStrumDown;
+      const gainNodes = strumFn.bind(playerContext.webAudioFontPlayer)(playerContext.audioContext, playerContext.audioContext.destination,
+                                                                       playerContext.presets[presetName], when, PITCHES, duration, volume);
+      gainNodes.forEach((gainNode) => {
         const node = gainNode.audioBufferSourceNode;
         addPlayingNode(node);
-      });
-    },
-    strum: (presetName, strumDirection, when, duration, pitches, volume = 1) => {
-      contextInitLoader.get().then(() => {
-        const strumFn = strumDirection === STRUM_DIRECTION_UP ? webAudioFontPlayer.queueStrumUp : webAudioFontPlayer.queueStrumDown;
-        const gainNodes = strumFn.bind(webAudioFontPlayer)(audioContext, audioContext.destination, presets[presetName], when, pitches, duration, volume);
-        gainNodes.forEach((gainNode) => {
-          const node = gainNode.audioBufferSourceNode;
-          addPlayingNode(node);
-        });
       });
     },
     stop: () => {
@@ -119,21 +119,25 @@ const Player = (audioContext) => {
       playingNodes.clear();
     },
     get playingNotesValuesIterator(){return playingNodes.values();},
-    get currentTime(){return audioContext.currentTime;},
-    get contextInitLoader(){return contextInitLoader;},
-    get presets(){return presets;},
-    get webAudioFontPlayer(){return webAudioFontPlayer;},
-    get audioContext(){return audioContext;}
+    get currentTime(){return playerContext.audioContext.currentTime;},
+    get presets(){return playerContext.presets;},
+    get webAudioFontPlayer(){return playerContext.webAudioFontPlayer;},
+    get audioContext(){return playerContext.audioContext;}
   });
+};
+
+const initPlayer = (audioContext) => {
+  return initPlayerContext(audioContext)
+      .then((playerContext) => new Promise((resolve) => resolve(Player(playerContext))));
 };
 
 
 export {
-  webAudioFontPresetPathsAndVarNames,
+  PRESET_PATHS_AND_VAR_NAMES, PITCHES,
   STRUM_DIRECTION_UP, STRUM_DIRECTION_DOWN,
   PRESET_NAME_PIANO, PRESET_NAME_GUITAR_NYLON, PRESET_NAME_GUITAR_STEEL,
   PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE, PRESET_NAME_GUITAR_ELECTRIC_JAZZ, PRESET_NAME_GUITAR_BASS,
   PRESET_NAME_DRUMS_KICK, PRESET_NAME_DRUMS_SNARE,
   PRESET_NAME_DRUMS_CRASH, PRESET_NAME_DRUMS_HIHAT, PRESET_NAME_DRUMS_HIHAT_OPEN, PRESET_NAMES,
-  Player
+  initPlayer
 };
