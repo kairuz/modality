@@ -40,14 +40,14 @@ const randomChance = (outOf) => randomInt(outOf) === 0;
 
 const LazyLoader = (promiseFn) => {
   let promise = null;
-  return Object.freeze({
+  return {
     get: () => {
       if (promise === null) {
         promise = Promise.resolve(promiseFn());
       }
       return promise;
     }
-  });
+  };
 };
 
 export {

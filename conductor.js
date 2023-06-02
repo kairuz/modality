@@ -1,8 +1,8 @@
-import * as domain from "./domain.js";
-import * as util from "./util.js";
-import * as composerLib from "./composer.js";
-import * as glossary from "./glossary.js";
-
+import {NOTES, CHORD_TYPE_TETRAD, CHORD_TYPE_TRIAD} from "./scale.js";
+import {randomChance, randomInt, randomChoice} from "./util.js";
+import {Composer, CHORD_COLOR_TONIC_INDEXES,
+  CHORD_COLOR_TONIC_INDEXES_WEIGHTED, CHORD_COLOR_CADENCE_INDEXES_WEIGHTED} from "./composer.js";
+import {keyNamesLength} from "./glossary.js";
 
 const STANDARD_BEAT_NOTE  = 1/4; // quarter note beats assumed for bpm measurement
 
@@ -45,7 +45,7 @@ const CHORD_PROGRESSIONS = Object.freeze([
 ]);
 
 
-const defaultComposer = composerLib.Composer();
+const defaultComposer = Composer();
 const defaultChangeCallback = (changeType, currentTime, when, bar, composerCapture, composerPrevCapture) => {};
 
 const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallback, composer = defaultComposer) => {
@@ -67,8 +67,8 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
     if (bars > 0) {
       const composerPrev = composer.capture();
 
-      if (chordProgressionIndex === null && util.randomChance(10)) {
-        chordProgressionIndex = util.randomInt(CHORD_PROGRESSIONS.length);
+      if (chordProgressionIndex === null && randomChance(10)) {
+        chordProgressionIndex = randomInt(CHORD_PROGRESSIONS.length);
         chordProgressionIndexI = 0;
       }
 
@@ -83,39 +83,39 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
           }
           return composer.chordIndex !== prevChordIndex ? CHANGE_CHORD : CHANGE_NONE;
         }
-        else if (util.randomChance(3)) {
+        else if (randomChance(3)) {
           return CHANGE_NONE;
         }
-        else if (util.randomChance(100)) {
+        else if (randomChance(100)) {
           composer.reset();
           return CHANGE_RESET;
         }
-        else if (util.randomChance(7)) { // scale
-          composer.changeScaleIndex(util.randomInt(composer.scales.length, composer.scaleIndex));
+        else if (randomChance(7)) { // scale
+          composer.changeScaleIndex(randomInt(composer.scales.length, composer.scaleIndex));
           return CHANGE_SCALE;
         }
-        else if (util.randomChance(5)) { // mode
-          const isRelative = !util.randomChance(5);
+        else if (randomChance(5)) { // mode
+          const isRelative = !randomChance(5);
 
           if (isRelative === true && composer.modeIndex !== 0) {
-            const randomModeIndex = util.randomInt(domain.NOTES, composer.modeIndex);
-            const chanceOfMode0ElseRandomModeIndex = util.randomChoice([randomModeIndex, randomModeIndex, 0]);
+            const randomModeIndex = randomInt(NOTES, composer.modeIndex);
+            const chanceOfMode0ElseRandomModeIndex = randomChoice([randomModeIndex, randomModeIndex, 0]);
             composer.changeModeIndex(chanceOfMode0ElseRandomModeIndex, isRelative);
           }
           else {
-            composer.changeModeIndex(util.randomInt(domain.NOTES, composer.modeIndex), isRelative);
+            composer.changeModeIndex(randomInt(NOTES, composer.modeIndex), isRelative);
           }
 
           return CHANGE_MODE;
         }
-        else if (util.randomChance(12)) { // key
-          composer.changeKeyIndex(util.randomInt(glossary.keyNamesLength, composer.parentKeyIndex));
+        else if (randomChance(12)) { // key
+          composer.changeKeyIndex(randomInt(keyNamesLength, composer.parentKeyIndex));
           return CHANGE_KEY;
         }
-        else if (util.randomChance(2)) { // chord
+        else if (randomChance(2)) { // chord
           // todo: how to add exclusion for randomChoice from weighted array?
-          if (composerLib.CHORD_COLOR_TONIC_INDEXES.includes(composer.chordIndex)) {
-            const changeChordIndex = util.randomChoice(composerLib.CHORD_COLOR_CADENCE_INDEXES_WEIGHTED);
+          if (CHORD_COLOR_TONIC_INDEXES.includes(composer.chordIndex)) {
+            const changeChordIndex = randomChoice(CHORD_COLOR_CADENCE_INDEXES_WEIGHTED);
             if (changeChordIndex !== composer.chordIndex) {
               composer.changeChordIndex(changeChordIndex);
             }
@@ -124,7 +124,7 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
             }
           }
           else {
-            const changeChordIndex = util.randomChoice(composerLib.CHORD_COLOR_TONIC_INDEXES_WEIGHTED);
+            const changeChordIndex = randomChoice(CHORD_COLOR_TONIC_INDEXES_WEIGHTED);
             if (changeChordIndex !== composer.chordIndex) {
               composer.changeChordIndex(changeChordIndex);
             }
@@ -134,8 +134,8 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
           }
           return CHANGE_CHORD;
         }
-        else if (util.randomChance(2)) { // chord type
-          composer.changeChordType(composer.chordType === domain.CHORD_TYPE_TETRAD ? domain.CHORD_TYPE_TRIAD : domain.CHORD_TYPE_TETRAD);
+        else if (randomChance(2)) { // chord type
+          composer.changeChordType(composer.chordType === CHORD_TYPE_TETRAD ? CHORD_TYPE_TRIAD : CHORD_TYPE_TETRAD);
           return CHANGE_CHORD_TYPE;
         }
         else {
@@ -191,7 +191,7 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
     player.stop();
   };
 
-  return Object.freeze({
+  return {
     get changeCallback(){return changeCallback;},
     get bars(){return bars},
     get composer(){return composer;},
@@ -204,7 +204,7 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
     get barLengthSecs(){return BAR_LENGTH_SECS;},
     start,
     stop
-  });
+  };
 };
 
 

@@ -1,5 +1,5 @@
-import * as domain from "./domain.js";
-import * as glossary from "./glossary.js";
+import {CHORD_TYPE_TETRAD, CHORD_TYPES, NOTES, SEMITONES} from "./scale.js";
+import {SCALES, indexForKeyName, cyclicKeyIndex, chordNameForOffsets} from "./glossary.js";
 
 
 const CHORD_COLOR_TONIC = 0;
@@ -16,19 +16,25 @@ const CHORD_COLOR_CADENCE_INDEXES_WEIGHTED = Object.freeze(CHORD_COLOR_CADENCE_I
     (acc, [chordIndex, weight]) => acc.concat(Array(weight).fill(Number(chordIndex))), []));
 const CHORD_COLOR_CADENCE_INDEXES = Object.freeze(Array.from(CHORD_COLOR_CADENCE_INDEXES_WEIGHTS.keys()).map(Number));
 
-const Composer = () => {
-  const scales = domain.SCALES;
-  let octave = 4;
+const DEFAULT_OCTAVE = 4;
+
+const Composer = (_scales = SCALES) => {
+  if (!Array.isArray(_scales)) {
+    throw 'invalid scales';
+  }
+
+  const scales = Object.freeze([..._scales]);
+  let octave = DEFAULT_OCTAVE;
   let scaleIndex = 0;
 
-  let parentKeyIndex = glossary.indexForKeyName('C');
+  let parentKeyIndex = indexForKeyName('C');
   let modeKeyIndex = parentKeyIndex;
   let chordKeyIndex = modeKeyIndex;
 
   let modeIndex = 0;
   let chordIndex = 0;
 
-  let chordType = domain.CHORD_TYPE_TETRAD;
+  let chordType = CHORD_TYPE_TETRAD;
 
   const capture = () => {
     return {octave, scaleIndex, parentKeyIndex, modeKeyIndex, chordKeyIndex, modeIndex, chordIndex, chordType};
@@ -42,31 +48,31 @@ const Composer = () => {
     const toModeOffset = scales[toScaleIndex].getModeOffset(0, modeIndex + chordIndex);
     const diff = toModeOffset - fromModeOffset;
 
-    parentKeyIndex = glossary.cyclicKeyIndex(parentKeyIndex + diff);
-    modeKeyIndex = glossary.cyclicKeyIndex(modeKeyIndex + diff);
-    chordKeyIndex = glossary.cyclicKeyIndex(chordKeyIndex + diff);
+    parentKeyIndex = cyclicKeyIndex(parentKeyIndex + diff);
+    modeKeyIndex = cyclicKeyIndex(modeKeyIndex + diff);
+    chordKeyIndex = cyclicKeyIndex(chordKeyIndex + diff);
   };
 
   const reset = () => {
-    octave = 4;
+    octave = DEFAULT_OCTAVE;
     scaleIndex = 0;
 
-    parentKeyIndex = glossary.indexForKeyName('C');
+    parentKeyIndex = indexForKeyName('C');
     modeKeyIndex = parentKeyIndex;
     chordKeyIndex = modeKeyIndex;
 
     modeIndex = 0;
     chordIndex = 0;
 
-    chordType = domain.CHORD_TYPE_TETRAD;
+    chordType = CHORD_TYPE_TETRAD;
   };
 
   const changeKeyIndex = (toKeyIndex) => {
     const prevKeyIndex = parentKeyIndex;
     parentKeyIndex = toKeyIndex;
     const diff = toKeyIndex - prevKeyIndex;
-    modeKeyIndex = glossary.cyclicKeyIndex(modeKeyIndex + diff);
-    chordKeyIndex = glossary.cyclicKeyIndex(chordKeyIndex + diff);
+    modeKeyIndex = cyclicKeyIndex(modeKeyIndex + diff);
+    chordKeyIndex = cyclicKeyIndex(chordKeyIndex + diff);
   };
 
   const changeModeIndex = (toModeIndex, isRelative = true) => {
@@ -79,11 +85,11 @@ const Composer = () => {
     const offsetDiff = modeToOffset - modeFromOffset;
 
     if (isRelative) {
-      modeKeyIndex = glossary.cyclicKeyIndex(modeKeyIndex + offsetDiff);
-      chordKeyIndex = glossary.cyclicKeyIndex(chordKeyIndex + offsetDiff);
+      modeKeyIndex = cyclicKeyIndex(modeKeyIndex + offsetDiff);
+      chordKeyIndex = cyclicKeyIndex(chordKeyIndex + offsetDiff);
     }
     else {
-      parentKeyIndex = glossary.cyclicKeyIndex(parentKeyIndex - offsetDiff);
+      parentKeyIndex = cyclicKeyIndex(parentKeyIndex - offsetDiff);
     }
   };
 
@@ -95,11 +101,11 @@ const Composer = () => {
     const modeToOffset = modeOffsets[toChordIndex];
     const offsetDiff = modeToOffset - modeFromOffset;
 
-    chordKeyIndex = glossary.cyclicKeyIndex(chordKeyIndex + offsetDiff);
+    chordKeyIndex = cyclicKeyIndex(chordKeyIndex + offsetDiff);
   };
 
   const changeChordType = (_chordType) => {
-    if (!domain.CHORD_TYPES.includes(_chordType)) {
+    if (!CHORD_TYPES.includes(_chordType)) {
       throw 'unknown chord type';
     }
     chordType = _chordType;
@@ -111,9 +117,9 @@ const Composer = () => {
   const getChordOffsets = () => scale().getChordOffsets(chordType, modeIndex + chordIndex);
   const getRelativeChordOffsets = (relativeIndex) =>
       scale().getChordOffsets(chordType, modeIndex + chordIndex + relativeIndex)
-          .map((o) => o + getModeOffset(relativeIndex) + (Math.trunc(relativeIndex / domain.NOTES) * domain.SEMITONES));
+          .map((o) => o + getModeOffset(relativeIndex) + (Math.trunc(relativeIndex / NOTES) * SEMITONES));
 
-  return Object.freeze({
+  return {
     capture,
     get scales(){return scales;},
     set octave(_octave){octave = _octave;},
@@ -140,10 +146,9 @@ const Composer = () => {
     },
     getRelativeChordOffsets,
     get chordName() {
-      return glossary.chordNameForOffsets(this.chordOffsets);
-    },
-    toString
-  });
+      return chordNameForOffsets(this.chordOffsets);
+    }
+  };
 };
 
 

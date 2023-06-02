@@ -1,5 +1,5 @@
-import * as domain from "./domain.js";
-import * as glossary from "./glossary.js";
+import {SCALES, scaleNameForOffsets, keyNameForIndex,
+  modeNameForOffsets, chordNameForOffsets} from "./glossary.js";
 
 
 const CAPTURE_FIELD_NAME_SCALE = 'scale';
@@ -7,14 +7,14 @@ const CAPTURE_FIELD_NAME_ADJUSTED_MODE = 'adjustedMode';
 const CAPTURE_FIELD_NAME_CHORD_TYPE = 'chordType';
 
 const CAPTURE_FIELD_NAMES_DISPLAY_CALLBACKS = Object.freeze({
-  [CAPTURE_FIELD_NAME_SCALE]            : (capture) => `${glossary.scaleNameForOffsets(domain.SCALES[capture.scaleIndex].offsets)} Scale`,
+  [CAPTURE_FIELD_NAME_SCALE]            : (capture) => `${scaleNameForOffsets(SCALES[capture.scaleIndex].offsets)} Scale`,
   [CAPTURE_FIELD_NAME_ADJUSTED_MODE]    : (capture) =>
-      `${glossary.keyNameForIndex(capture.chordKeyIndex)} ` +
-      `${glossary.modeNameForOffsets(domain.SCALES[capture.scaleIndex].getModeOffsets(capture.modeIndex + capture.chordIndex))}`,
+      `${keyNameForIndex(capture.chordKeyIndex)} ` +
+      `${modeNameForOffsets(SCALES[capture.scaleIndex].getModeOffsets(capture.modeIndex + capture.chordIndex))}`,
   [CAPTURE_FIELD_NAME_CHORD_TYPE]       : (capture) =>
-      `${glossary.keyNameForIndex(capture.chordKeyIndex)} ` +
-      glossary.chordNameForOffsets(
-          domain.SCALES[capture.scaleIndex].getChordOffsets(capture.chordType, capture.modeIndex + capture.chordIndex))
+      `${keyNameForIndex(capture.chordKeyIndex)} ` +
+      chordNameForOffsets(
+          SCALES[capture.scaleIndex].getChordOffsets(capture.chordType, capture.modeIndex + capture.chordIndex))
 
 });
 
@@ -61,12 +61,12 @@ const CaptureUi = () => {
     });
   };
 
-  return Object.freeze({
+  return {
     get capture(){return capture;},
     update,
     get tdsObj(){return tdsObj;},
     get div(){return div;}
-  });
+  };
 };
 
 const BarUi = (bar, when) => {
@@ -77,9 +77,9 @@ const BarUi = (bar, when) => {
   div.appendChild(infoDiv);
   infoDiv.textContent = `bar ${bar} @ ${when.toFixed(2)}s`;
 
-  return Object.freeze({
+  return {
     get div(){return div;}
-  });
+  };
 };
 
 const CaptureDiffUi = (_capture, _prevCapture = _capture, bar, when, changeType) => {
@@ -123,11 +123,11 @@ const CaptureDiffUi = (_capture, _prevCapture = _capture, bar, when, changeType)
 
   });
 
-  return Object.freeze({
+  return {
     get capture(){return capture;},
     get prevCapture(){return prevCapture;},
     get div(){return div;}
-  });
+  };
 };
 
 
