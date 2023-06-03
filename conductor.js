@@ -4,6 +4,7 @@ import {Composer, CHORD_COLOR_TONIC_INDEXES,
   CHORD_COLOR_TONIC_INDEXES_WEIGHTED, CHORD_COLOR_CADENCE_INDEXES_WEIGHTED} from "./composer.js";
 import {keyNamesLength} from "./glossary.js";
 
+
 const STANDARD_BEAT_NOTE  = 1/4; // quarter note beats assumed for bpm measurement
 
 const BEATS_PER_MINUTE    = 70; // 1 quarter note = 1 beat;

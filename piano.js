@@ -1,10 +1,10 @@
 import {SEMITONES} from "./scale.js";
-import * as glossary from "./glossary.js";
+import {indexForKeyName, keyNameForIndex, keyNamesLength, SCALE_MAJOR} from "./glossary.js";
 
 
 const OCTAVES = 9;
-const MIN_INDEX = glossary.indexForKeyName('A');
-const MAX_INDEX = (glossary.keyNamesLength * (OCTAVES - 1));
+const MIN_INDEX = indexForKeyName('A');
+const MAX_INDEX = (keyNamesLength * (OCTAVES - 1));
 
 const Piano = (octaves = OCTAVES) => {
 
@@ -14,9 +14,9 @@ const Piano = (octaves = OCTAVES) => {
   const PianoKey = (index) => {
     const number = index + 1;
     const keyIndex = index + MIN_INDEX;
-    const key = glossary.keyNameForIndex(keyIndex);
+    const key = keyNameForIndex(keyIndex);
     const octave = Math.trunc(keyIndex / SEMITONES);
-    const isAccidental = glossary.SCALE_MAJOR.getFlag(keyIndex) === 0;
+    const isAccidental = SCALE_MAJOR.getFlag(keyIndex) === 0;
     const isDiatonic = !isAccidental;
 
     return {

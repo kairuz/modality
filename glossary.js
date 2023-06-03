@@ -1,4 +1,4 @@
-import * as util from "./util.js";
+import {cyclicIndex} from "./util.js";
 import {Scale} from "./scale.js";
 
 
@@ -164,7 +164,7 @@ const offsetsPatternsChordNames = new Map()
 const keyNamesLength = keyNames.length;
 
 const cyclicKeyIndex = (keyIndex) => {
-  return util.cyclicIndex(keyNames.length, keyIndex);
+  return cyclicIndex(keyNames.length, keyIndex);
 };
 
 const keyNameForIndex = (index) => {

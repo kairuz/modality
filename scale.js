@@ -15,7 +15,7 @@ const patternToFlags = (pattern) => {
     throw 'invalid heptatonic scale pattern';
   }
 
-  return pattern.split('').map(Number);
+  return [...pattern].map(Number);
 };
 
 
