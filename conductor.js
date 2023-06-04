@@ -2,7 +2,7 @@ import {NOTES, CHORD_TYPE_TETRAD, CHORD_TYPE_TRIAD} from "./scale.js";
 import {randomChance, randomInt, randomChoice} from "./util.js";
 import {Composer, CHORD_COLOR_TONIC_INDEXES,
   CHORD_COLOR_TONIC_INDEXES_WEIGHTED, CHORD_COLOR_CADENCE_INDEXES_WEIGHTED} from "./composer.js";
-import {keyNamesLength} from "./glossary.js";
+import {KEY_NAMES} from "./glossary.js";
 
 
 const STANDARD_BEAT_NOTE  = 1/4; // quarter note beats assumed for bpm measurement
@@ -110,7 +110,7 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
           return CHANGE_MODE;
         }
         else if (randomChance(12)) { // key
-          composer.changeKeyIndex(randomInt(keyNamesLength, composer.parentKeyIndex));
+          composer.changeKeyIndex(randomInt(KEY_NAMES.length, composer.parentKeyIndex));
           return CHANGE_KEY;
         }
         else if (randomChance(2)) { // chord
