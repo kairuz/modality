@@ -1,10 +1,10 @@
 import {SEMITONES} from "./scale.js";
-import {indexForKeyName, keyNameForIndex, keyNamesLength, SCALE_MAJOR} from "./glossary.js";
+import {indexForKeyName, keyNameForIndex, KEY_NAMES, SCALE_MAJOR} from "./glossary.js";
 
 
 const OCTAVES = 9;
 const MIN_INDEX = indexForKeyName('A');
-const MAX_INDEX = (keyNamesLength * (OCTAVES - 1));
+const MAX_INDEX = (KEY_NAMES.length * (OCTAVES - 1));
 
 const Piano = (octaves = OCTAVES) => {
 

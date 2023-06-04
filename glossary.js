@@ -2,40 +2,61 @@ import {cyclicIndex} from "./util.js";
 import {Scale} from "./scale.js";
 
 
-const keyNames = [
-  'C',
-  'C#/Db',
-  'D',
-  'D#/Eb',
-  'E',
-  'F',
-  'F#/Gb',
-  'G',
-  'G#/Ab',
-  'A',
-  'A#/Bb',
-  'B'
-];
+const KEY_C   = 'C';
+const KEY_Cs  = 'C#';
+const KEY_Db  = 'Db';
+const KEY_D   = 'D';
+const KEY_Ds  = 'D#';
+const KEY_Eb  = 'Eb';
+const KEY_E   = 'E';
+const KEY_F   = 'F';
+const KEY_Fs  = 'F#';
+const KEY_Gb  = 'Gb';
+const KEY_G   = 'G';
+const KEY_Gs  = 'G#';
+const KEY_Ab  = 'Ab';
+const KEY_A   = 'A';
+const KEY_As  = 'A#';
+const KEY_Bb  = 'Bb';
+const KEY_B   = 'B';
 
-const keyNameIndex = {
-  'C': 0,
-  'C#': 1,
-  'Db': 1,
-  'D': 2,
-  'D#': 3,
-  'Eb': 3,
-  'E': 4,
-  'F': 5,
-  'F#': 6,
-  'Gb': 6,
-  'G': 7,
-  'G#': 8,
-  'Ab': 8,
-  'A': 9,
-  'A#': 10,
-  'Bb': 10,
-  'B': 11,
-};
+const KEYS = Object.freeze([KEY_C, KEY_Cs, KEY_Db, KEY_D, KEY_Ds, KEY_Eb, KEY_E, KEY_F, KEY_Fs,
+                            KEY_Gb, KEY_G, KEY_Gs, KEY_Ab, KEY_A, KEY_As, KEY_Bb, KEY_B]);
+
+const KEY_NAMES = Object.freeze([
+  KEY_C,
+  `${KEY_Cs}/${KEY_Db}`,
+  KEY_D,
+  `${KEY_Ds}/${KEY_Eb}`,
+  KEY_E,
+  KEY_F,
+  `${KEY_Fs}/${KEY_Gb}`,
+  KEY_G,
+  `${KEY_Gs}/${KEY_Ab}`,
+  KEY_A,
+  `${KEY_As}/${KEY_Bb}`,
+  KEY_B
+]);
+
+const KEY_NAME_INDEX = Object.freeze({
+  [KEY_C] : 0,
+  [KEY_Cs]: 1,
+  [KEY_Db]: 1,
+  [KEY_D] : 2,
+  [KEY_Ds]: 3,
+  [KEY_Eb]: 3,
+  [KEY_E] : 4,
+  [KEY_F] : 5,
+  [KEY_Fs]: 6,
+  [KEY_Gb]: 6,
+  [KEY_G] : 7,
+  [KEY_Gs]: 8,
+  [KEY_Ab]: 8,
+  [KEY_A] : 9,
+  [KEY_As]: 10,
+  [KEY_Bb]: 10,
+  [KEY_B] : 11
+});
 
 const SCALE_PATTERN_MAJOR           = '101011010101';
 const SCALE_PATTERN_HARMONIC_MINOR  = '101011001101';
@@ -161,18 +182,16 @@ const offsetsPatternsChordNames = new Map()
     .set('0,4,8,11',        'Augmented Major Seventh')
     .set('0,3,6,9',         'Diminished Seventh');
 
-const keyNamesLength = keyNames.length;
-
 const cyclicKeyIndex = (keyIndex) => {
-  return cyclicIndex(keyNames.length, keyIndex);
+  return cyclicIndex(KEY_NAMES.length, keyIndex);
 };
 
 const keyNameForIndex = (index) => {
-  return keyNames[cyclicKeyIndex(index)];
+  return KEY_NAMES[cyclicKeyIndex(index)];
 };
 
 const indexForKeyName = (keyName) => {
-  return keyNameIndex[keyName];
+  return KEY_NAME_INDEX[keyName];
 };
 
 const chordNameForOffsetsPattern = (chordOffsetsPattern) => {
@@ -207,7 +226,10 @@ export {
   MODE_NAMES_MAJOR_SCALE, MODE_NAMES_HARMONIC_MINOR_SCALE, MODE_NAMES_HARMONIC_MAJOR_SCALE, MODE_NAMES_MELODIC_MINOR_SCALE,
   MODES_NAMES,
   SCALES_NAMES_MODES_NAMES,
-  cyclicKeyIndex, keyNameForIndex, keyNamesLength, indexForKeyName,
+  KEY_C, KEY_Cs, KEY_Db, KEY_D, KEY_Ds, KEY_Eb, KEY_E, KEY_F, KEY_Fs,
+  KEY_Gb, KEY_G, KEY_Gs, KEY_Ab, KEY_A, KEY_As, KEY_Bb, KEY_B,
+  KEYS,
+  cyclicKeyIndex, keyNameForIndex, KEY_NAMES, KEY_NAME_INDEX, indexForKeyName,
   chordNameForOffsets, chordNameForOffsetsPattern,
   scaleNameForOffsets, scaleNameForOffsetsPattern,
   modeNameForOffsets, modeNameForOffsetsPattern
