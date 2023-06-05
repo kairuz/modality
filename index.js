@@ -7,56 +7,43 @@ import {PianoUi, MIN_INDEX, MAX_INDEX} from "./piano.js";
 import {CaptureDiffUi, BarUi, CaptureUi} from "./ui.js";
 
 
-let audioContext = null;
-
-let audioContextLoader = LazyLoader(() => {
-  return new Promise((resolve) => {
-    audioContext = new AudioContext();
-    resolve(audioContext);
-  });
+const audioContextLoader = LazyLoader(() => {
+  return Promise.resolve(new AudioContext());
 });
 
-let conductor = null;
-
-let conductorLoader = LazyLoader(() => {
-  return new Promise((resolve) => {
-    audioContextLoader.get().then(() => {
-      initConductor(audioContext, leadRifferQueueCallback, conductorChangeCallback)
-          .then((_conductor) => {
-            conductor = _conductor;
-            resolve(_conductor);
-          });
-    });
-  });
+const audioContextAndConductorLoader = LazyLoader(() => {
+  return audioContextLoader
+      .get()
+      .then((audioContext) => initConductor(audioContext, leadRifferQueueCallback, conductorChangeCallback)
+          .then((conductor) => Promise.resolve([audioContext, conductor])));
 });
 
 let startTime = null;
+
+const wasStarted = () => startTime !== null;
 
 const leadRifferQueueCallback = (currPresetName, currentTime, when, whenOffset, duration, pitch, currVolume) => {
   if (pitch >= MIN_INDEX && pitch <= MAX_INDEX) {
     const selectTimeoutId = setTimeout(() => {
       leadRifferTimeoutIds.delete(selectTimeoutId);
-
       pianoUi.getPianoKeyUi(pitch).select();
 
       const deselectTimeoutId = setTimeout(() => {
         leadRifferTimeoutIds.delete(deselectTimeoutId);
-
         pianoUi.getPianoKeyUi(pitch).deselect();
       }, duration * 1000);
 
       leadRifferTimeoutIds.add(deselectTimeoutId);
-
     }, ((when + whenOffset) - currentTime) * 1000);
+
     leadRifferTimeoutIds.add(selectTimeoutId);
   }
 };
 
-
 const conductorChangeCallback = (changeType, currentTime, when, bar, composerCapture, composerPrevCapture) => {
   setTimeout(() => {
-    updateHighlight(composerPrevCapture, pianoUi, 'white', 'black', 'white', 'black', 1, 2);
-    updateHighlight(composerCapture, pianoUi, 'lightblue', 'lightblue', 'cornflowerblue', 'cornflowerblue', 1, 2);
+    updatePianoKeyColor(composerPrevCapture, pianoUi, 'white', 'black', 'white', 'black', 1, 2); // unset
+    updatePianoKeyColor(composerCapture, pianoUi, 'lightblue', 'lightblue', 'cornflowerblue', 'cornflowerblue', 1, 2);
 
     const transformHeight = (div, startHeightPx, endHeightPx) => {
       div.style.overflow = 'hidden';
@@ -75,8 +62,8 @@ const conductorChangeCallback = (changeType, currentTime, when, bar, composerCap
       captureDiffAndPrevPianoDiv.appendChild(ui.div);
       captureDiffAndPrevPianoDiv.appendChild(prevPianoDiv);
       const prevPianoUi = PianoUi();
-      updateHighlight(composerPrevCapture, prevPianoUi, 'lightcoral', 'lightcoral', 'indianred', 'indianred', 1, 2);
-      updateHighlight(composerCapture, prevPianoUi, 'lightgreen', 'lightgreen', 'olivedrab', 'olivedrab', 4, 5);
+      updatePianoKeyColor(composerPrevCapture, prevPianoUi, 'lightcoral', 'lightcoral', 'indianred', 'indianred', 1, 2);
+      updatePianoKeyColor(composerCapture, prevPianoUi, 'lightgreen', 'lightgreen', 'olivedrab', 'olivedrab', 4, 5);
       prevPianoDiv.appendChild(prevPianoUi.div);
       uiDivsBuffer.push(captureDiffAndPrevPianoDiv);
       uisBufferDiv.prepend(captureDiffAndPrevPianoDiv);
@@ -111,33 +98,44 @@ pianoUiDiv.appendChild(pianoUi.div);
 
 const uisBufferDiv = document.getElementById('uis-buffer');
 
-const updateHighlight = (_composerCapture, pianoUi,
-                         modeHighlightColor, modeHighlightColorAcc, chordHighlightColor, chordHighlightColorAcc,
-                         modeHighlightOctave, chordHighlightOctave) => {
-  const modeOffsets = SCALES[_composerCapture.scaleIndex].getModeOffsets(_composerCapture.modeIndex + _composerCapture.chordIndex);
-  const modeHighlightOffset = (SEMITONES * modeHighlightOctave) + _composerCapture.chordKeyIndex;
+const updatePianoKeyColor = (composerCapture, _pianoUi,
+                             modeColor, modeColorAcc, chordColor, chordColorAcc,
+                             modeOctave, chordOctave) => {
+  const modeOffsets = SCALES[composerCapture.scaleIndex].getModeOffsets(composerCapture.modeIndex + composerCapture.chordIndex);
+  const modeHighlightOffset = (SEMITONES * modeOctave) + composerCapture.chordKeyIndex;
   modeOffsets.forEach((modeOffset) => {
-    const pianoKeyUi = pianoUi.getPianoKeyUi(modeHighlightOffset + modeOffset);
-    pianoKeyUi.setBackground(pianoKeyUi.pianoKey.isAccidental ? modeHighlightColorAcc : modeHighlightColor);
+    const pianoKeyUi = _pianoUi.getPianoKeyUi(modeHighlightOffset + modeOffset);
+    pianoKeyUi.setBackground(pianoKeyUi.pianoKey.isAccidental ? modeColorAcc : modeColor);
   });
 
-  const chordOffsets = SCALES[_composerCapture.scaleIndex].getChordOffsets(_composerCapture.chordType, _composerCapture.modeIndex + _composerCapture.chordIndex);
-  const chordHighlightOffset = (SEMITONES * chordHighlightOctave) + _composerCapture.chordKeyIndex;
+  const chordOffsets = SCALES[composerCapture.scaleIndex].getChordOffsets(composerCapture.chordType, composerCapture.modeIndex + composerCapture.chordIndex);
+  const chordHighlightOffset = (SEMITONES * chordOctave) + composerCapture.chordKeyIndex;
   chordOffsets.forEach((chordOffset) => {
-    const pianoKeyUi = pianoUi.getPianoKeyUi(chordHighlightOffset + chordOffset);
-    pianoKeyUi.setBackground(pianoKeyUi.pianoKey.isAccidental ? chordHighlightColorAcc : chordHighlightColor);
+    const pianoKeyUi = _pianoUi.getPianoKeyUi(chordHighlightOffset + chordOffset);
+    pianoKeyUi.setBackground(pianoKeyUi.pianoKey.isAccidental ? chordColorAcc : chordColor);
   });
 };
 
 const leadRifferTimeoutIds = new Set();
 
 const stop = () => {
-  conductor?.stop();
+  if (!navigator.userActivation.hasBeenActive) {
+    throw 'user has not yet been active';
+  }
+
+  if (wasStarted()) {
+    audioContextAndConductorLoader.get().then(([, conductor]) => conductor.stop());
+  }
+
   leadRifferTimeoutIds.forEach((timeoutId) => clearTimeout(timeoutId));
   leadRifferTimeoutIds.clear();
 };
 
 const start = () => {
+  if (!navigator.userActivation.hasBeenActive) {
+    throw 'user has not yet been active';
+  }
+
   stop();
   uiDivsBuffer.forEach((uiDiv) => {
     uiDiv.remove();
@@ -148,19 +146,21 @@ const start = () => {
     pianoKeyUi.setBackground(pianoKeyUi.pianoKey.isAccidental ? 'black' : 'white');
   });
 
-  conductorLoader.get().then(() => {
-    startTime = audioContext.currentTime;
-    conductor.start();
+  audioContextAndConductorLoader
+      .get()
+      .then(([audioContext, conductor]) => {
+        startTime = audioContext.currentTime;
+        conductor.start();
 
-    const composerCapture = conductor.composer.capture();
+        const composerCapture = conductor.composer.capture();
 
-    captureUi.update(composerCapture);
-    updateHighlight(conductor.composer.capture(), pianoUi, 'lightblue', 'lightblue', 'cornflowerblue', 'cornflowerblue', 1, 2);
+        captureUi.update(composerCapture);
+        updatePianoKeyColor(conductor.composer.capture(), pianoUi, 'lightblue', 'lightblue', 'cornflowerblue', 'cornflowerblue', 1, 2);
 
-    const barUi = BarUi(0, conductor.player.currentTime - startTime);
-    uiDivsBuffer.push(barUi.div);
-    uisBufferDiv.prepend(barUi.div);
-  });
+        const barUi = BarUi(0, conductor.player.currentTime - startTime);
+        uiDivsBuffer.push(barUi.div);
+        uisBufferDiv.prepend(barUi.div);
+      });
 };
 
 window.addEventListener('load', () => {
