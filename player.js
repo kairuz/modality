@@ -128,7 +128,7 @@ const Player = (playerContext) => {
 
 const initPlayer = (audioContext) => {
   return initPlayerContext(audioContext)
-      .then((playerContext) => new Promise((resolve) => resolve(Player(playerContext))));
+      .then((playerContext) => Promise.resolve(Player(playerContext)));
 };
 
 
