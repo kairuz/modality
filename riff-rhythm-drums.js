@@ -1,8 +1,8 @@
 import {
   PRESET_NAME_DRUMS_CRASH, PRESET_NAME_DRUMS_HIHAT, PRESET_NAME_DRUMS_HIHAT_OPEN,
-  PRESET_NAME_DRUMS_SNARE, PRESET_NAME_DRUMS_KICK} from "./player.js";
-import {randomChance} from "./util.js";
-import {NOTE_LENGTH_SECS} from "./conductor.js";
+  PRESET_NAME_DRUMS_SNARE, PRESET_NAME_DRUMS_KICK, PITCHES} from "./player.js";
+import {randomChance, Heap} from "./util.js";
+import {NOTE_LENGTH_SECS, Strike, Riff} from "./conductor.js";
 
 
 // 1      &      2      &      3      &      4      &
@@ -27,38 +27,53 @@ const DRUM_PRESET_NAMES_RHYTHMS = [
   RHYTHM_PRESET_NAME_DRUMS_SNARE, RHYTHM_PRESET_NAME_DRUMS_KICK
 ];
 
+const VOLUMES = {
+  [PRESET_NAME_DRUMS_CRASH]:      0.5,
+  [PRESET_NAME_DRUMS_HIHAT]:      0.5,
+  [PRESET_NAME_DRUMS_HIHAT_OPEN]: 0.5,
+  [PRESET_NAME_DRUMS_SNARE]:      0.5,
+  [PRESET_NAME_DRUMS_KICK]:       0.8
+};
+
 
 export default (composer, player, when, bars) => {
+  const strikes = [];
+
   DRUM_PRESET_NAMES_RHYTHMS.forEach(([presetName, drumRhythm]) => {
     drumRhythm.forEach((note) => {
 
       switch (presetName) {
         case PRESET_NAME_DRUMS_KICK: {
-          if (randomChance(7)) {
-            player.play(presetName, when + (NOTE_LENGTH_SECS / 4) + (note * NOTE_LENGTH_SECS), 1, undefined, 0.8);
+          if (randomChance(6)) {
+            strikes.push(Strike(presetName, (NOTE_LENGTH_SECS / 4) + (note * NOTE_LENGTH_SECS), PITCHES[presetName], 1, VOLUMES[presetName]));
           }
           break;
         }
         case PRESET_NAME_DRUMS_HIHAT: {
+          if (randomChance(7)) {
+            return;
+          }
           if (randomChance(5)) {
-            player.play(presetName, when + (NOTE_LENGTH_SECS / 4) + (note * NOTE_LENGTH_SECS), 1, undefined, 0.5);
+            strikes.push(Strike(presetName, (NOTE_LENGTH_SECS / 4) + (note * NOTE_LENGTH_SECS), PITCHES[presetName], 1, VOLUMES[presetName]));
           }
           break;
         }
         case PRESET_NAME_DRUMS_HIHAT_OPEN: {
-          if (randomChance(3)) {
+          if (randomChance(2)) {
             return;
           }
           break;
         }
         case PRESET_NAME_DRUMS_CRASH: {
-          if (randomChance(3)) {
+          if (randomChance(2)) {
             return;
           }
           break;
         }
       }
-      player.play(presetName, when + (note * NOTE_LENGTH_SECS), 1, undefined, 0.5);
+      strikes.push(Strike(presetName, note * NOTE_LENGTH_SECS, PITCHES[presetName], 1, VOLUMES[presetName]));
     });
   });
+
+  return Riff(strikes, when);
 };

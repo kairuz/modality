@@ -14,8 +14,8 @@ export default (
   return initPlayer(audioContext)
       .then((player) => {
         const leadRiffer = LeadRiffer(leadRifferQueueCallback);
-        const barRiffs = [riffRhythmDrums, riffRhythmGuitar, riffRhythmBassGuitar, leadRiffer.riff];
-        const conductor = Conductor(player, barRiffs, conductorChangeCallback);
+        const barRiffs = [riffRhythmGuitar, riffRhythmBassGuitar, leadRiffer.riff];
+        const conductor = Conductor(player, riffRhythmDrums, barRiffs, conductorChangeCallback);
         return Promise.resolve(conductor);
       });
 };

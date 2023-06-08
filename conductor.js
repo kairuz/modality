@@ -1,5 +1,5 @@
 import {NOTES, CHORD_TYPE_TETRAD, CHORD_TYPE_TRIAD} from "./scale.js";
-import {randomChance, randomInt, randomChoice} from "./util.js";
+import {randomChance, randomInt, randomChoice, Heap} from "./util.js";
 import {Composer, CHORD_COLOR_TONIC_INDEXES,
   CHORD_COLOR_TONIC_INDEXES_WEIGHTED, CHORD_COLOR_CADENCE_INDEXES_WEIGHTED} from "./composer.js";
 import {KEY_NAMES} from "./glossary.js";
@@ -30,6 +30,26 @@ const CHANGE_CHORD_TYPE = 'chordType';
 const CHANGES = Object.freeze([CHANGE_NONE, CHANGE_RESET, CHANGE_SCALE, CHANGE_KEY, CHANGE_MODE, CHANGE_CHORD, CHANGE_CHORD_TYPE]);
 
 
+const Strike = (presetName, whenOffset, pitch, duration, volume = 1) => {
+  return {
+    get presetName(){return presetName;},
+    get whenOffset(){return whenOffset;},
+    get pitch(){return pitch;},
+    get duration(){return duration;},
+    get volume(){return volume;},
+  };
+};
+
+const Riff = (_strikes, when) => {
+  const strikes = Object.freeze([..._strikes]);
+
+  return {
+    get strikes(){return strikes;},
+    get when(){return when;}
+  };
+};
+
+
 const CHORD_PROGRESSIONS = Object.freeze([
   Object.freeze([1,4].map((n) => n - 1)),       // C    F
   Object.freeze([1,1,4,4].map((n) => n - 1)),   // C    C    F    F
@@ -49,7 +69,7 @@ const CHORD_PROGRESSIONS = Object.freeze([
 const defaultComposer = Composer();
 const defaultChangeCallback = (changeType, currentTime, when, bar, composerCapture, composerPrevCapture) => {};
 
-const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallback, composer = defaultComposer) => {
+const Conductor = (player, riffRhythmDrums, _barRiffs = [], changeCallback = defaultChangeCallback, composer = defaultComposer) => {
   if (!Array.isArray(_barRiffs) || _barRiffs.some((barInstrument) => typeof barInstrument !== 'function')) {
     throw 'invalid barRiffs';
   }
@@ -63,6 +83,8 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
   let lastBarScheduledFor = null;
   let chordProgressionIndex = null;
   let chordProgressionIndexI = null;
+
+  const sequencer = Sequencer(player);
 
   const queueBar = (when) => {
     if (bars > 0) {
@@ -149,6 +171,12 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
 
     barRiffs.forEach((barRiff) => barRiff(composer, player, when, bars));
 
+    const drumsRiff = riffRhythmDrums(composer, player, when, bars);
+
+    drumsRiff.strikes.forEach((strike) => {
+      sequencer.sequence(drumsRiff, strike);
+    });
+
   };
 
   const scheduleBar = () => {
@@ -166,7 +194,8 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
       if (checkScheduleBar()) {
         scheduleBar();
       }
-      setTimeout(checkScheduleBarLoop, 100);
+
+      setTimeout(checkScheduleBarLoop, BAR_LENGTH_MILLIS / 4);
     }
     else {
       // stopped
@@ -183,6 +212,7 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
 
     running = true;
     lastBarScheduledFor = player.currentTime - BAR_LENGTH_SECS;
+    sequencer.start();
     scheduleBar();
     setTimeout(checkScheduleBarLoop);
   };
@@ -190,6 +220,7 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
   const stop = () => {
     running = false;
     player.stop();
+    sequencer.stop();
   };
 
   return {
@@ -209,10 +240,63 @@ const Conductor = (player, _barRiffs = [], changeCallback = defaultChangeCallbac
 };
 
 
+const SEQUENCE_AHEAD_SECS = 0.2;
+const SEQUENCE_AHEAD_MILLIS = SEQUENCE_AHEAD_SECS / 1000;
+
+const Sequencer = (player) => {
+  const heap = Heap((rs1, rs2) => rs1.whenAndOffset - rs2.whenAndOffset);
+
+  let running = null;
+
+  const playStrike = () => {
+    while (checkPlayStrike()) {
+      const {strike, whenAndOffset} = heap.pop();
+      player.play(strike.presetName, whenAndOffset, strike.duration, strike.pitch, strike.volume);
+    }
+  };
+
+  const checkPlayStrike = () => {
+    return heap.isNotEmpty &&
+           (player.currentTime + SEQUENCE_AHEAD_SECS) > heap.peek().whenAndOffset;
+  };
+
+  const checkPlayStrikeLoop = () => {
+    if (running === true) {
+      if (checkPlayStrike()) {
+        playStrike();
+      }
+      setTimeout(checkPlayStrikeLoop, SEQUENCE_AHEAD_MILLIS / 4);
+    }
+    else {
+      // stopped
+    }
+  };
+
+  const sequence = (riff, strike) => {
+    heap.add({riff, strike, get whenAndOffset(){return riff.when + strike.whenOffset;}});
+  };
+
+  const start = () => {
+    running = true;
+    setTimeout(checkPlayStrikeLoop);
+  };
+
+  const stop = () => {
+    running = false;
+  };
+
+  return {
+    sequence,
+    start,
+    stop
+  }
+};
+
+
 export {
   STANDARD_BEAT_NOTE, BEATS_PER_MINUTE, NOTES_PER_BAR, NOTE_TYPE, BEATS_PER_NOTE, BEATS_PER_BAR,
   BEAT_LENGTH_MILLIS, BEAT_LENGTH_SECS, NOTE_LENGTH_MILLIS, NOTE_LENGTH_SECS, BAR_LENGTH_MILLIS, BAR_LENGTH_SECS,
   CHORD_PROGRESSIONS,
   CHANGES, CHANGE_NONE, CHANGE_RESET, CHANGE_SCALE, CHANGE_KEY, CHANGE_MODE, CHANGE_CHORD, CHANGE_CHORD_TYPE,
-  Conductor, defaultComposer, defaultChangeCallback
+  Conductor, defaultComposer, defaultChangeCallback, Strike, Riff,
 };
