@@ -128,7 +128,7 @@ const Heap = (compare, isMax = false) => {
     peek,
     pop,
     get isEmpty(){return arr.length === 0;},
-    get isNotEmpty() {return this.isEmpty;},
+    get isNotEmpty() {return !this.isEmpty;},
     get size() {return arr.length;},
     toArray: () => [...arr]
   };
