@@ -241,7 +241,7 @@ const Conductor = (player, riffRhythmDrums, _barRiffs = [], changeCallback = def
 
 
 const SEQUENCE_AHEAD_SECS = 0.2;
-const SEQUENCE_AHEAD_MILLIS = SEQUENCE_AHEAD_SECS / 1000;
+const SEQUENCE_AHEAD_MILLIS = SEQUENCE_AHEAD_SECS * 1000;
 
 const Sequencer = (player) => {
   const heap = Heap((rs1, rs2) => rs1.whenAndOffset - rs2.whenAndOffset);
