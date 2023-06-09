@@ -46,7 +46,6 @@ const PITCHES = Object.freeze({
 
 const PLAY_TYPE_STRIKE = 0;
 const PLAY_TYPE_STRUM = 1;
-const PLAY_TYPES = Object.freeze([PLAY_TYPE_STRIKE, PLAY_TYPE_STRUM]);
 
 
 const Strike = (presetName, when, pitch, duration, volume = 1) => {
@@ -64,7 +63,7 @@ const Strike = (presetName, when, pitch, duration, volume = 1) => {
   };
 };
 
-const Strum = (presetName, when, _pitches, direction, duration, volume = 1) => {
+const Strum = (presetName, when, pitches, direction, duration, volume = 1) => {
   if (!PRESET_NAMES.includes(presetName)) {
     throw 'invalid presetName';
   }
@@ -72,13 +71,11 @@ const Strum = (presetName, when, _pitches, direction, duration, volume = 1) => {
     throw 'invalid strum direction';
   }
 
-  const pitches = Object.freeze(..._pitches);
-
   return {
     get type(){return PLAY_TYPE_STRUM;},
     get presetName(){return presetName;},
     get when(){return when;},
-    get pitches(){return pitches;},
+    get pitches(){return pitches;}, // Must allow mutation as WebAudioFontPlayer sorts pitches
     get direction(){return direction;},
     get duration(){return duration;},
     get volume(){return volume;}
@@ -150,7 +147,7 @@ const Player = (playerContext) => {
     playingNodes.add(node);
   };
 
-  const _strike = (strike) => {
+  const strike = (strike) => {
     const gainNode = playerContext.webAudioFontPlayer.queueWaveTable(
         playerContext.audioContext, playerContext.audioContext.destination,
         playerContext.presets[strike.presetName], strike.when, strike.pitch, strike.duration, strike.volume);
@@ -158,7 +155,7 @@ const Player = (playerContext) => {
     addPlayingNode(node);
   };
 
-  const _strum = (strum) => {
+  const strum = (strum) => {
     const strumFn = strum.direction === STRUM_DIRECTION_UP ?
                     playerContext.webAudioFontPlayer.queueStrumUp :
                     playerContext.webAudioFontPlayer.queueStrumDown;
@@ -172,38 +169,13 @@ const Player = (playerContext) => {
   };
 
   return {
-    _play: (play) => {
+    play: (play) => {
       if (play.type === PLAY_TYPE_STRIKE) {
-        _strike(play);
+        strike(play);
       }
       else if (play.type === PLAY_TYPE_STRUM) {
-        _strum(play);
+        strum(play);
       }
-    },
-    play: (presetName, when, duration, pitch, volume = 1) => {
-      if (typeof pitch === 'undefined' && !(presetName in PITCHES)) {
-        throw 'invalid pitch';
-      }
-      if (typeof pitch === 'undefined') {
-        pitch = PITCHES[presetName];
-      }
-
-      const gainNode = playerContext.webAudioFontPlayer.queueWaveTable(
-          playerContext.audioContext, playerContext.audioContext.destination,
-          playerContext.presets[presetName], when,  pitch, duration, volume);
-      const node = gainNode.audioBufferSourceNode;
-      addPlayingNode(node);
-    },
-    strum: (presetName, strumDirection, when, duration, PITCHES, volume = 1) => {
-      const strumFn = strumDirection === STRUM_DIRECTION_UP ?
-                      playerContext.webAudioFontPlayer.queueStrumUp :
-                      playerContext.webAudioFontPlayer.queueStrumDown;
-      const gainNodes = strumFn.bind(playerContext.webAudioFontPlayer)(playerContext.audioContext, playerContext.audioContext.destination,
-                                                                       playerContext.presets[presetName], when, PITCHES, duration, volume);
-      gainNodes.forEach((gainNode) => {
-        const node = gainNode.audioBufferSourceNode;
-        addPlayingNode(node);
-      });
     },
     stop: () => {
       playingNodes.forEach((node) => node.stop());
@@ -230,6 +202,6 @@ export {
   PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE, PRESET_NAME_GUITAR_ELECTRIC_JAZZ, PRESET_NAME_GUITAR_BASS,
   PRESET_NAME_DRUMS_KICK, PRESET_NAME_DRUMS_SNARE,
   PRESET_NAME_DRUMS_CRASH, PRESET_NAME_DRUMS_HIHAT, PRESET_NAME_DRUMS_HIHAT_OPEN, PRESET_NAMES,
-  PLAY_TYPE_STRIKE, PLAY_TYPE_STRUM, PLAY_TYPES,
+  PLAY_TYPE_STRIKE, PLAY_TYPE_STRUM,
   Riff, initPlayer
 };

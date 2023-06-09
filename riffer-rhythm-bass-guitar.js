@@ -1,12 +1,13 @@
-import {PRESET_NAME_GUITAR_BASS} from "./player.js";
+import {PRESET_NAME_GUITAR_BASS, Riff} from "./player.js";
 import {CHORD_TYPE_TETRAD} from "./scale.js";
 import {randomChoice, randomChance} from "./util.js";
 import {BAR_LENGTH_SECS, NOTE_LENGTH_SECS} from "./conductor.js";
 
 
 export default (composer, player, when, bars) => {
+  const riff = Riff();
   const queueBass = (whenOffset, pitch, duration) => {
-    player.play(PRESET_NAME_GUITAR_BASS, when + whenOffset, duration, pitch, 0.75);
+    riff.addStrike(PRESET_NAME_GUITAR_BASS, when + whenOffset, pitch, duration, 0.75);
   };
 
   const {chordOffsets, octave, chordKeyIndex} = composer;
@@ -31,4 +32,5 @@ export default (composer, player, when, bars) => {
       queueBass((BAR_LENGTH_SECS / 2) + (NOTE_LENGTH_SECS / 2), ((octave) * 12) + chordKeyIndex + randomChoice(addedNoteArr), 0.3);
     }
   }
+  return riff;
 };

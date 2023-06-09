@@ -1,6 +1,6 @@
 import {NOTES, CHORD_TYPE_TETRAD, TETRAD_NOTES} from "./scale.js";
 import {PRESET_NAME_GUITAR_ELECTRIC_JAZZ, PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE,
-  PRESET_NAME_GUITAR_NYLON, PRESET_NAME_GUITAR_STEEL, PRESET_NAME_PIANO} from "./player.js";
+  PRESET_NAME_GUITAR_NYLON, PRESET_NAME_GUITAR_STEEL, PRESET_NAME_PIANO, Riff} from "./player.js";
 import {randomChoice, randomChance, randomInt} from "./util.js";
 import {MIN_INDEX, MAX_INDEX} from "./piano.js"
 import {NOTE_LENGTH_SECS, BAR_LENGTH_SECS} from "./conductor.js";
@@ -30,7 +30,8 @@ const defaultQueueCallback = (currPresetName, currentTime, when, whenOffset, dur
 
 const LeadRiffer = (queueCallback = defaultQueueCallback) => {
   return {
-    riff: (composer, player, when, bars) => {
+    riffLead: (composer, player, when, bars) => {
+      const riff = Riff();
 
       if (barsToPlay === 0) {
         barsToPlay = randomChoice([4, 4, 2, 2, 2]);
@@ -52,7 +53,8 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
         const duration = durationOverride === null ? randomChoice(durations) : durationOverride;
 
         const volume = volumeOverride !== null ? volumeOverride : currVolume;
-        player.play(currPresetName, when + whenOffset, duration, pitch, volume);
+        riff.addStrike(currPresetName, when + whenOffset, pitch, duration, volume);
+
         queueCallback(currPresetName, player.currentTime, when, whenOffset, duration, pitch, volume);
       };
 
@@ -348,7 +350,7 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
 
       const riffF = () => {};
 
-      const riff = randomChoice([
+      const leadRiff = randomChoice([
         ...Array(4).fill(riffA),
         ...Array(4).fill(riffBa),
         ...Array(3).fill(riffBb),
@@ -360,7 +362,9 @@ const LeadRiffer = (queueCallback = defaultQueueCallback) => {
         ...Array(2).fill(riffEb),
         ...Array(1).fill(riffF)
       ]);
-      riff();
+      leadRiff();
+
+      return riff;
     }
   }
 };

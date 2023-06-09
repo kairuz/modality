@@ -49,16 +49,17 @@ const CHORD_PROGRESSIONS = Object.freeze([
 const defaultComposer = Composer();
 const defaultChangeCallback = (changeType, currentTime, when, bar, composerCapture, composerPrevCapture) => {};
 
-const Conductor = (player, riffRhythmDrums, _barRiffs = [], changeCallback = defaultChangeCallback, composer = defaultComposer) => {
-  if (!Array.isArray(_barRiffs) || _barRiffs.some((barInstrument) => typeof barInstrument !== 'function')) {
-    throw 'invalid barRiffs';
+const Conductor = (player, _riffers,
+                   changeCallback = defaultChangeCallback, composer = defaultComposer) => {
+  if (!Array.isArray(_riffers) || _riffers.some((riffer) => typeof riffer !== 'function')) {
+    throw 'invalid riffers';
   }
   if (typeof changeCallback !== 'function') {
     throw 'changeCallback must be a function';
   }
 
   let bars = 0;
-  const barRiffs = Object.freeze([..._barRiffs]);
+  const riffers = Object.freeze([..._riffers]);
   let running = null;
   let lastBarScheduledFor = null;
   let chordProgressionIndex = null;
@@ -149,14 +150,12 @@ const Conductor = (player, riffRhythmDrums, _barRiffs = [], changeCallback = def
       changeCallback(changeType, player.currentTime, when, bars, composer.capture(), composerPrev);
     }
 
-    barRiffs.forEach((barRiff) => barRiff(composer, player, when, bars));
-
-    const riff = riffRhythmDrums(composer, player, when, bars);
-
-    for (const play of riff.playsValues()) {
-      sequencer.add(play);
-    }
-
+    riffers.forEach((riffer) => {
+      const riff = riffer(composer, player, when, bars);
+      for (const play of riff.playsValues()) {
+        sequencer.add(play);
+      }
+    });
   };
 
   const scheduleBar = () => {
@@ -212,7 +211,7 @@ const Conductor = (player, riffRhythmDrums, _barRiffs = [], changeCallback = def
     get lastBarScheduledFor(){return lastBarScheduledFor;},
     get chordProgressionIndex(){return chordProgressionIndex;},
     get chordProgressionIndexI(){return chordProgressionIndexI;},
-    get barRiffs(){return barRiffs;},
+    get riffers(){return riffers;},
     get barLengthSecs(){return BAR_LENGTH_SECS;},
     start,
     stop
@@ -230,7 +229,7 @@ const Sequencer = (player) => {
 
   const sequence = () => {
     while (checkSequence()) {
-      player._play(plays.pop());
+      player.play(plays.pop());
     }
   };
 
@@ -268,7 +267,8 @@ const Sequencer = (player) => {
   return {
     add,
     start,
-    stop
+    stop,
+    get size(){return plays.size;}
   }
 };
 

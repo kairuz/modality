@@ -1,5 +1,5 @@
 import {STRUM_DIRECTION_UP, STRUM_DIRECTION_DOWN,
-  PRESET_NAME_GUITAR_NYLON, PRESET_NAME_GUITAR_STEEL} from "./player.js";
+  PRESET_NAME_GUITAR_NYLON, PRESET_NAME_GUITAR_STEEL, Riff} from "./player.js";
 import {randomChoice} from "./util.js";
 import {NOTE_LENGTH_SECS} from "./conductor.js";
 
@@ -31,11 +31,11 @@ const STRUM_PATTERNS_WEIGHTED = [
 
 export default (composer, player, when, bars) => {
   const presetName = randomChoice([PRESET_NAME_GUITAR_NYLON, PRESET_NAME_GUITAR_STEEL]);
-  const volume = VOLUMES[presetName];
   const strumPattern = randomChoice(STRUM_PATTERNS_WEIGHTED);
-  strumPattern.forEach(([note, strumDirection]) => {
-    player.strum(presetName, strumDirection, when + (note * NOTE_LENGTH_SECS), 1, composer.chordOffsets.map((co) => {
-      return (composer.octave * 12) + co + composer.chordKeyIndex;
-    }), volume);
-  });
+
+  return strumPattern.reduce((riff, [note, strumDirection]) => {
+    const pitches = composer.chordOffsets.map((co) => (composer.octave * 12) + co + composer.chordKeyIndex);
+    riff.addStrum(presetName, when + (note * NOTE_LENGTH_SECS), pitches, strumDirection, 1, VOLUMES[presetName]);
+    return riff;
+  }, Riff());
 };
