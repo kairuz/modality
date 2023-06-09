@@ -131,7 +131,8 @@ const Heap = (compare, isMax = false) => {
     get isEmpty(){return arr.length === 0;},
     get isNotEmpty() {return !this.isEmpty;},
     get size() {return arr.length;},
-    toArray: () => [...arr]
+    toArray: () => [...arr],
+    values: () => arr.values()
   };
 
 };

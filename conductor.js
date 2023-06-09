@@ -259,8 +259,14 @@ const Sequencer = (player) => {
     setTimeout(checkSequenceLoop);
   };
 
-  const stop = () => {
+  const stop = (unsequencedPlaysCallback = null) => {
     running = false;
+
+    if (typeof unsequencedPlaysCallback === 'function') {
+      const unsequencedPlays = Array.from(plays.values());
+      unsequencedPlaysCallback(unsequencedPlays);
+    }
+
     plays.clear();
   };
 
@@ -268,7 +274,7 @@ const Sequencer = (player) => {
     add,
     start,
     stop,
-    get size(){return plays.size;}
+    get playsSize(){return plays.size;}
   }
 };
 
@@ -278,5 +284,5 @@ export {
   BEAT_LENGTH_MILLIS, BEAT_LENGTH_SECS, NOTE_LENGTH_MILLIS, NOTE_LENGTH_SECS, BAR_LENGTH_MILLIS, BAR_LENGTH_SECS,
   CHORD_PROGRESSIONS,
   CHANGES, CHANGE_NONE, CHANGE_RESET, CHANGE_SCALE, CHANGE_KEY, CHANGE_MODE, CHANGE_CHORD, CHANGE_CHORD_TYPE,
-  Conductor, defaultComposer, defaultChangeCallback
+  Conductor, Sequencer, defaultComposer, defaultChangeCallback
 };
