@@ -1,9 +1,9 @@
 import {initPlayer} from "./player.js";
 import {Conductor, defaultChangeCallback} from "./conductor.js";
-import riffRhythmDrums from "./riff-rhythm-drums.js";
-import riffRhythmBassGuitar from "./riff-rhythm-bass-guitar.js";
-import riffRhythmGuitar from "./riff-rhythm-guitar.js";
-import {LeadRiffer, defaultQueueCallback as defaultLeadRifferQueueCallback} from "./riff-lead.js";
+import riffRhythmDrums from "./riffer-rhythm-drums.js";
+import riffRhythmBassGuitar from "./riffer-rhythm-bass-guitar.js";
+import riffRhythmGuitar from "./riffer-rhythm-guitar.js";
+import {LeadRiffer, defaultQueueCallback as defaultLeadRifferQueueCallback} from "./riffer-lead.js";
 
 
 export default (
@@ -14,8 +14,8 @@ export default (
   return initPlayer(audioContext)
       .then((player) => {
         const leadRiffer = LeadRiffer(leadRifferQueueCallback);
-        const barRiffs = [riffRhythmGuitar, riffRhythmBassGuitar, leadRiffer.riff];
-        const conductor = Conductor(player, riffRhythmDrums, barRiffs, conductorChangeCallback);
+        const riffers = [riffRhythmDrums, riffRhythmBassGuitar, riffRhythmGuitar, leadRiffer.riffLead];
+        const conductor = Conductor(player, riffers, conductorChangeCallback);
         return Promise.resolve(conductor);
       });
 };
