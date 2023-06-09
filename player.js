@@ -3,6 +3,7 @@ import WebAudioFontPlayer from "https://kairuz.github.io/webaudiofont/npm/dist/p
 
 const STRUM_DIRECTION_DOWN = 0;
 const STRUM_DIRECTION_UP = 1;
+const STRUM_DIRECTION = [STRUM_DIRECTION_DOWN, STRUM_DIRECTION_UP];
 
 const PRESET_NAME_PIANO                     = 'piano';
 const PRESET_NAME_GUITAR_NYLON              = 'guitar-nylon';
@@ -41,6 +42,67 @@ const PITCHES = Object.freeze({
   [PRESET_NAME_DRUMS_HIHAT]:      42,
   [PRESET_NAME_DRUMS_HIHAT_OPEN]: 46
 });
+
+
+const PLAY_TYPE_STRIKE = 0;
+const PLAY_TYPE_STRUM = 1;
+const PLAY_TYPES = Object.freeze([PLAY_TYPE_STRIKE, PLAY_TYPE_STRUM]);
+
+
+const Strike = (presetName, when, pitch, duration, volume = 1) => {
+  if (!PRESET_NAMES.includes(presetName)) {
+    throw 'invalid presetName';
+  }
+
+  return {
+    get type(){return PLAY_TYPE_STRIKE;},
+    get presetName(){return presetName;},
+    get when(){return when;},
+    get pitch(){return pitch;},
+    get duration(){return duration;},
+    get volume(){return volume;}
+  };
+};
+
+const Strum = (presetName, when, _pitches, direction, duration, volume = 1) => {
+  if (!PRESET_NAMES.includes(presetName)) {
+    throw 'invalid presetName';
+  }
+  if (!STRUM_DIRECTION.includes(direction)) {
+    throw 'invalid strum direction';
+  }
+
+  const pitches = Object.freeze(..._pitches);
+
+  return {
+    get type(){return PLAY_TYPE_STRUM;},
+    get presetName(){return presetName;},
+    get when(){return when;},
+    get pitches(){return pitches;},
+    get direction(){return direction;},
+    get duration(){return duration;},
+    get volume(){return volume;}
+  };
+};
+
+const Riff = () => {
+  const plays = [];
+
+  const addStrike = (presetName, when, pitch, duration, volume = 1) => {
+    plays.push(Strike(presetName, when, pitch, duration, volume));
+  };
+
+  const addStrum = (presetName, when, _pitches, direction, duration, volume = 1) => {
+    plays.push(Strum(presetName, when, _pitches, direction, duration, volume));
+  };
+
+  return {
+    addStrum,
+    addStrike,
+    playsValues: () => plays.values()
+  }
+};
+
 
 const initPlayerContext = (audioContext) => {
   return new Promise((resolve, reject) => {
@@ -88,7 +150,36 @@ const Player = (playerContext) => {
     playingNodes.add(node);
   };
 
+  const _strike = (strike) => {
+    const gainNode = playerContext.webAudioFontPlayer.queueWaveTable(
+        playerContext.audioContext, playerContext.audioContext.destination,
+        playerContext.presets[strike.presetName], strike.when, strike.pitch, strike.duration, strike.volume);
+    const node = gainNode.audioBufferSourceNode;
+    addPlayingNode(node);
+  };
+
+  const _strum = (strum) => {
+    const strumFn = strum.direction === STRUM_DIRECTION_UP ?
+                    playerContext.webAudioFontPlayer.queueStrumUp :
+                    playerContext.webAudioFontPlayer.queueStrumDown;
+    const gainNodes = strumFn.bind(playerContext.webAudioFontPlayer)(playerContext.audioContext, playerContext.audioContext.destination,
+                                                                     playerContext.presets[strum.presetName], strum.when, strum.pitches,
+                                                                     strum.duration, strum.volume);
+    gainNodes.forEach((gainNode) => {
+      const node = gainNode.audioBufferSourceNode;
+      addPlayingNode(node);
+    });
+  };
+
   return {
+    _play: (play) => {
+      if (play.type === PLAY_TYPE_STRIKE) {
+        _strike(play);
+      }
+      else if (play.type === PLAY_TYPE_STRUM) {
+        _strum(play);
+      }
+    },
     play: (presetName, when, duration, pitch, volume = 1) => {
       if (typeof pitch === 'undefined' && !(presetName in PITCHES)) {
         throw 'invalid pitch';
@@ -134,10 +225,11 @@ const initPlayer = (audioContext) => {
 
 export {
   PRESET_PATHS_AND_VAR_NAMES, PITCHES,
-  STRUM_DIRECTION_UP, STRUM_DIRECTION_DOWN,
+  STRUM_DIRECTION_UP, STRUM_DIRECTION_DOWN, STRUM_DIRECTION,
   PRESET_NAME_PIANO, PRESET_NAME_GUITAR_NYLON, PRESET_NAME_GUITAR_STEEL,
   PRESET_NAME_GUITAR_ELECTRIC_OVERDRIVE, PRESET_NAME_GUITAR_ELECTRIC_JAZZ, PRESET_NAME_GUITAR_BASS,
   PRESET_NAME_DRUMS_KICK, PRESET_NAME_DRUMS_SNARE,
   PRESET_NAME_DRUMS_CRASH, PRESET_NAME_DRUMS_HIHAT, PRESET_NAME_DRUMS_HIHAT_OPEN, PRESET_NAMES,
-  initPlayer
+  PLAY_TYPE_STRIKE, PLAY_TYPE_STRUM, PLAY_TYPES,
+  Riff, initPlayer
 };

@@ -1,8 +1,8 @@
 import {
   PRESET_NAME_DRUMS_CRASH, PRESET_NAME_DRUMS_HIHAT, PRESET_NAME_DRUMS_HIHAT_OPEN,
-  PRESET_NAME_DRUMS_SNARE, PRESET_NAME_DRUMS_KICK, PITCHES} from "./player.js";
-import {randomChance, Heap} from "./util.js";
-import {NOTE_LENGTH_SECS, Strike, Riff} from "./conductor.js";
+  PRESET_NAME_DRUMS_SNARE, PRESET_NAME_DRUMS_KICK, PITCHES, Riff} from "./player.js";
+import {randomChance} from "./util.js";
+import {NOTE_LENGTH_SECS} from "./conductor.js";
 
 
 // 1      &      2      &      3      &      4      &
@@ -37,7 +37,7 @@ const VOLUMES = {
 
 
 export default (composer, player, when, bars) => {
-  const strikes = [];
+  const riff = Riff();
 
   DRUM_PRESET_NAMES_RHYTHMS.forEach(([presetName, drumRhythm]) => {
     drumRhythm.forEach((note) => {
@@ -45,7 +45,7 @@ export default (composer, player, when, bars) => {
       switch (presetName) {
         case PRESET_NAME_DRUMS_KICK: {
           if (randomChance(6)) {
-            strikes.push(Strike(presetName, (NOTE_LENGTH_SECS / 4) + (note * NOTE_LENGTH_SECS), PITCHES[presetName], 1, VOLUMES[presetName]));
+            riff.addStrike(presetName, when + (NOTE_LENGTH_SECS / 4) + (note * NOTE_LENGTH_SECS), PITCHES[presetName], 1, VOLUMES[presetName]);
           }
           break;
         }
@@ -54,7 +54,7 @@ export default (composer, player, when, bars) => {
             return;
           }
           if (randomChance(5)) {
-            strikes.push(Strike(presetName, (NOTE_LENGTH_SECS / 4) + (note * NOTE_LENGTH_SECS), PITCHES[presetName], 1, VOLUMES[presetName]));
+            riff.addStrike(presetName, when + (NOTE_LENGTH_SECS / 4) + (note * NOTE_LENGTH_SECS), PITCHES[presetName], 1, VOLUMES[presetName]);
           }
           break;
         }
@@ -71,9 +71,9 @@ export default (composer, player, when, bars) => {
           break;
         }
       }
-      strikes.push(Strike(presetName, note * NOTE_LENGTH_SECS, PITCHES[presetName], 1, VOLUMES[presetName]));
+      riff.addStrike(presetName, when + (note * NOTE_LENGTH_SECS), PITCHES[presetName], 1, VOLUMES[presetName]);
     });
   });
 
-  return Riff(strikes, when);
+  return riff;
 };
