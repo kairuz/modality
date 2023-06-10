@@ -63,19 +63,24 @@ const Strike = (presetName, when, pitch, duration, volume = 1) => {
   };
 };
 
-const Strum = (presetName, when, pitches, direction, duration, volume = 1) => {
+const Strum = (presetName, when, _pitches, direction, duration, volume = 1) => {
   if (!PRESET_NAMES.includes(presetName)) {
     throw 'invalid presetName';
+  }
+  if (!Array.isArray(_pitches)) {
+    throw 'invalid pitches';
   }
   if (!STRUM_DIRECTION.includes(direction)) {
     throw 'invalid strum direction';
   }
 
+  const pitches = Object.freeze([..._pitches]);
+
   return {
     get type(){return PLAY_TYPE_STRUM;},
     get presetName(){return presetName;},
     get when(){return when;},
-    get pitches(){return pitches;}, // Must allow mutation as WebAudioFontPlayer sorts pitches
+    get pitches(){return pitches;},
     get direction(){return direction;},
     get duration(){return duration;},
     get volume(){return volume;}
@@ -159,8 +164,9 @@ const Player = (playerContext) => {
     const strumFn = strum.direction === STRUM_DIRECTION_UP ?
                     playerContext.webAudioFontPlayer.queueStrumUp :
                     playerContext.webAudioFontPlayer.queueStrumDown;
+    const pitches = [...strum.pitches]; // need mutable copy as webaudiofont sorts pitches array
     const gainNodes = strumFn.bind(playerContext.webAudioFontPlayer)(playerContext.audioContext, playerContext.audioContext.destination,
-                                                                     playerContext.presets[strum.presetName], strum.when, strum.pitches,
+                                                                     playerContext.presets[strum.presetName], strum.when, pitches,
                                                                      strum.duration, strum.volume);
     gainNodes.forEach((gainNode) => {
       const node = gainNode.audioBufferSourceNode;
