@@ -46,6 +46,9 @@ const CHORD_PROGRESSIONS = Object.freeze([
 ]);
 
 
+const SCHEDULE_AHEAD_SECS = BAR_LENGTH_SECS / 4;
+const SCHEDULE_AHEAD_MILLIS = SCHEDULE_AHEAD_SECS * 1000;
+
 const defaultComposer = Composer();
 const defaultChangeCallback = (changeType, currentTime, when, bar, composerCapture, composerPrevCapture) => {};
 
@@ -165,7 +168,7 @@ const Conductor = (player, _riffers,
   };
 
   const checkScheduleBar = () => {
-    return (player.currentTime + 1) > (lastBarScheduledFor + BAR_LENGTH_SECS);
+    return (player.currentTime + SCHEDULE_AHEAD_SECS) > (lastBarScheduledFor + BAR_LENGTH_SECS);
   };
 
   const checkScheduleBarLoop = () => {
@@ -174,7 +177,7 @@ const Conductor = (player, _riffers,
         scheduleBar();
       }
 
-      setTimeout(checkScheduleBarLoop, BAR_LENGTH_MILLIS / 4);
+      setTimeout(checkScheduleBarLoop, SCHEDULE_AHEAD_MILLIS / 4);
     }
     else {
       // stopped
