@@ -1,5 +1,5 @@
 import {CHORD_TYPE_TETRAD, CHORD_TYPES, NOTES, SEMITONES} from "./scale.js";
-import {SCALES, indexForKeyName, cyclicKeyIndex, chordNameForOffsets} from "./glossary.js";
+import {indexForKeyName, cyclicKeyIndex, chordNameForOffsets} from "./glossary.js";
 
 
 const CHORD_COLOR_TONIC = 0;
@@ -18,7 +18,7 @@ const CHORD_COLOR_CADENCE_INDEXES = Object.freeze(Array.from(CHORD_COLOR_CADENCE
 
 const DEFAULT_OCTAVE = 4;
 
-const Composer = (_scales = SCALES) => {
+const Composer = (_scales) => {
   if (!Array.isArray(_scales)) {
     throw 'invalid scales';
   }

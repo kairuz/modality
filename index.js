@@ -1,26 +1,13 @@
-import {SCALES} from "./glossary.js";
+import {SCALES, SCALE_NAMES, SCALES_NAMES_MODES_NAMES,
+  SCALE_NAME_MAJOR, SCALE_NAME_HARMONIC_MINOR,
+  SCALE_NAME_HARMONIC_MAJOR, SCALE_NAME_MELODIC_MINOR} from "./glossary.js";
 import {SEMITONES} from "./scale.js";
-import {LazyLoader} from "./util.js";
+import {LazyLoader, AllowedIndexes} from "./util.js";
 import {CHANGE_NONE} from "./conductor.js";
 import initConductor from "./factory.js";
 import {PianoUi, MIN_INDEX, MAX_INDEX} from "./piano.js";
-import {CaptureDiffUi, BarUi, CaptureUi} from "./ui.js";
+import {ScaleToggleUi, CaptureDiffUi, BarUi, CaptureUi} from "./ui.js";
 
-
-const audioContextLoader = LazyLoader(() => {
-  return Promise.resolve(new AudioContext());
-});
-
-const audioContextAndConductorLoader = LazyLoader(() => {
-  return audioContextLoader
-      .get()
-      .then((audioContext) => initConductor(audioContext, leadRifferQueueCallback, conductorChangeCallback)
-          .then((conductor) => Promise.resolve([audioContext, conductor])));
-});
-
-let startTime = null;
-
-const wasStarted = () => startTime !== null;
 
 const leadRifferQueueCallback = (currPresetName, currentTime, when, whenOffset, duration, pitch, currVolume) => {
   if (pitch >= MIN_INDEX && pitch <= MAX_INDEX) {
@@ -85,6 +72,28 @@ const conductorChangeCallback = (changeType, currentTime, when, bar, composerCap
   }, ((when - currentTime) - 250) * 1000);
 };
 
+const defaultAllowedScalesIndexesList = Object.freeze([
+    SCALE_NAMES.indexOf(SCALE_NAME_MAJOR),
+    SCALE_NAMES.indexOf(SCALE_NAME_HARMONIC_MINOR),
+    SCALE_NAMES.indexOf(SCALE_NAME_HARMONIC_MAJOR),
+    SCALE_NAMES.indexOf(SCALE_NAME_MELODIC_MINOR)
+]);
+const allowedScaleIndexes = AllowedIndexes(SCALES.length, defaultAllowedScalesIndexesList);
+
+const audioContextLoader = LazyLoader(() => {
+  return Promise.resolve(new AudioContext());
+});
+
+const audioContextAndConductorLoader = LazyLoader(() => {
+  return audioContextLoader
+      .get()
+      .then((audioContext) => initConductor(audioContext, allowedScaleIndexes, leadRifferQueueCallback, conductorChangeCallback)
+          .then((conductor) => Promise.resolve([audioContext, conductor])));
+});
+
+let startTime = null;
+
+const wasStarted = () => startTime !== null;
 const uiDivsBuffer = [];
 const UIS_BUFFER_LIMIT = 40;
 
@@ -163,7 +172,54 @@ const start = () => {
       });
 };
 
+const loadAllowedScalesCheckboxes = () => {
+  let disabledScaleToggleUiIndex = null;
+
+  const includeCallback = (scaleIndex) => {
+    if (allowedScaleIndexes.size === 1 && scaleToggleUis[disabledScaleToggleUiIndex].checkbox.checked === false) {
+      scaleToggleUis[disabledScaleToggleUiIndex].checkbox.checked = true
+    }
+    allowedScaleIndexes.add(scaleIndex);
+    if (allowedScaleIndexes.size === 1) {
+      return;
+    }
+    if (disabledScaleToggleUiIndex !== null) {
+      scaleToggleUis[disabledScaleToggleUiIndex].checkbox.disabled = false;
+      disabledScaleToggleUiIndex = null;
+    }
+  };
+
+  const excludeCallback = (scaleIndex) => {
+    if (allowedScaleIndexes.size === 1) {
+      if (scaleToggleUis[disabledScaleToggleUiIndex].checkbox.checked === false) {
+        scaleToggleUis[disabledScaleToggleUiIndex].checkbox.checked = true
+      }
+      return;
+    }
+    allowedScaleIndexes.delete(scaleIndex);
+    if (allowedScaleIndexes.size === 1) {
+      disabledScaleToggleUiIndex = allowedScaleIndexes.values().next().value;
+      scaleToggleUis[disabledScaleToggleUiIndex].checkbox.disabled = true;
+    }
+  };
+
+  const allowedScalesDiv = document.getElementById('allowed-scales');
+
+  const scaleToggleUis = SCALES_NAMES_MODES_NAMES.map(([scale, scaleName,], i) => {
+    return ScaleToggleUi(i, scale, scaleName, includeCallback, excludeCallback, allowedScaleIndexes.has(i));
+  });
+
+  scaleToggleUis.forEach((scaleToggleUi) => {
+    const div = document.createElement('div');
+    div.style.display = 'inline-block';
+    div.appendChild(scaleToggleUi.checkbox);
+    div.appendChild(scaleToggleUi.label);
+    allowedScalesDiv.appendChild(div);
+  });
+};
+
 window.addEventListener('load', () => {
+  loadAllowedScalesCheckboxes();
   document.getElementById('buttonStop').addEventListener('click', stop);
   document.getElementById('buttonStart').addEventListener('click', start);
 });
