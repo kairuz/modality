@@ -2,6 +2,10 @@
 <head>
 <style>
 
+#allowed-scales {
+  margin-top: 20px;
+}
+
 #capture-ui {
   height: 140px;
   margin-bottom: 40px;
@@ -70,6 +74,7 @@
 }
 
 </style>
+<link rel="stylesheet" href="toggle.css">
 <script type="module" src="./index.js"></script>
 </head>
 
@@ -78,6 +83,7 @@
 <div>
   <button id="buttonStart">Start</button>
   <button id="buttonStop">Stop</button>
+  <div id="allowed-scales"></div>
 </div>
 <div id="capture-ui"></div>
 <div id="piano-ui"></div>
