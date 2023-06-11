@@ -2,6 +2,35 @@ import {SCALES, scaleNameForOffsets, keyNameForIndex,
   modeNameForOffsets, chordNameForOffsets} from "./glossary.js";
 
 
+const ScaleToggleUi = (scaleIndex, scale, scaleName, includeCallback, excludeCallback, checked = true) => {
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  const checkboxId = `scaleToggleCheckbox_${scaleIndex}`;
+  checkbox.id = checkboxId;
+  checkbox.classList.add('toggle');
+  checkbox.checked = checked;
+
+  checkbox.addEventListener('change', () => {
+    if (checkbox.checked) {
+      includeCallback(scaleIndex);
+    }
+    else {
+      excludeCallback(scaleIndex);
+    }
+  });
+
+  const label = document.createElement('label');
+  label.htmlFor = checkboxId;
+  label.id = `${checkboxId}_label`;
+  label.style.marginRight = '10px';
+  label.appendChild(document.createTextNode(scaleName));
+
+  return {
+    get checkbox(){return checkbox;},
+    get label(){return label;}
+  };
+};
+
 const CAPTURE_FIELD_NAME_SCALE = 'scale';
 const CAPTURE_FIELD_NAME_ADJUSTED_MODE = 'adjustedMode';
 const CAPTURE_FIELD_NAME_CHORD_TYPE = 'chordType';
@@ -134,5 +163,5 @@ const CaptureDiffUi = (_capture, _prevCapture = _capture, bar, when, changeType)
 export {
   CAPTURE_FIELD_NAME_SCALE, CAPTURE_FIELD_NAME_ADJUSTED_MODE, CAPTURE_FIELD_NAME_CHORD_TYPE, CAPTURE_FIELD_NAMES_DISPLAY_CALLBACKS,
   DESIRED_CAPTURE_DIFF_FIELD_NAMES, DESIRED_CAPTURE_FIELD_NAMES,
-  CaptureUi, BarUi, CaptureDiffUi
+  ScaleToggleUi, CaptureUi, BarUi, CaptureDiffUi
 };

@@ -39,7 +39,12 @@ const randomChoice = (arr, exclIndex = null) => {
 const randomChance = (outOf) => randomInt(outOf) === 0;
 
 const LazyLoader = (promiseFn) => {
+  if (typeof promiseFn !== 'function') {
+    throw 'invalid promiseFn';
+  }
+
   let promise = null;
+
   return {
     get: () => {
       if (promise === null) {
@@ -48,6 +53,43 @@ const LazyLoader = (promiseFn) => {
       return promise;
     }
   };
+};
+
+const AllowedIndexes = (total, defaultAllowedIndexesList = Array.from(Array(total)).map((_, i) => Number(i))) => {
+  if (!Array.isArray(defaultAllowedIndexesList) ||
+      defaultAllowedIndexesList.length === 0 ||
+      defaultAllowedIndexesList.some((index) => !Number.isInteger(index) || index < 0 || index >= total)) {
+    throw 'invalid defaultAllowedIndexesList';
+  }
+  if (!Number.isInteger(total) || total < 0) {
+    throw 'invalid total';
+  }
+
+  const set = new Set(defaultAllowedIndexesList);
+
+  return {
+    add: (index) => {
+      if (!Number.isInteger(index) || index < 0 || index >= total) {
+        throw 'invalid index';
+      }
+      set.add(index);
+    },
+    delete: (index) => {
+      if (!Number.isInteger(index)) {
+        throw 'invalid index';
+      }
+      set.delete(index);
+    },
+    has: (index) => {
+      if (!Number.isInteger(index)) {
+        throw 'invalid index';
+      }
+      return set.has(index);
+    },
+    values: () => set.values(),
+    get size(){return set.size;}
+  }
+
 };
 
 const Heap = (compare, isMax = false) => {
@@ -141,5 +183,5 @@ const Heap = (compare, isMax = false) => {
 export {
   cyclicIndex,
   randomInt, randomChance, randomChoice,
-  LazyLoader, Heap
+  LazyLoader, AllowedIndexes, Heap
 };

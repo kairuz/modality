@@ -1,6 +1,6 @@
 import {NOTES, CHORD_TYPE_TETRAD, CHORD_TYPE_TRIAD} from "./scale.js";
 import {randomChance, randomInt, randomChoice, Heap} from "./util.js";
-import {Composer, CHORD_COLOR_TONIC_INDEXES,
+import {CHORD_COLOR_TONIC_INDEXES,
   CHORD_COLOR_TONIC_INDEXES_WEIGHTED, CHORD_COLOR_CADENCE_INDEXES_WEIGHTED} from "./composer.js";
 import {KEY_NAMES} from "./glossary.js";
 
@@ -49,11 +49,9 @@ const CHORD_PROGRESSIONS = Object.freeze([
 const SCHEDULE_AHEAD_SECS = BAR_LENGTH_SECS / 4;
 const SCHEDULE_AHEAD_MILLIS = SCHEDULE_AHEAD_SECS * 1000;
 
-const defaultComposer = Composer();
 const defaultChangeCallback = (changeType, currentTime, when, bar, composerCapture, composerPrevCapture) => {};
 
-const Conductor = (player, _riffers,
-                   changeCallback = defaultChangeCallback, composer = defaultComposer) => {
+const Conductor = (player, _riffers, composer, allowedScaleIndexes, changeCallback = defaultChangeCallback) => {
   if (!Array.isArray(_riffers) || _riffers.some((riffer) => typeof riffer !== 'function')) {
     throw 'invalid riffers';
   }
@@ -80,7 +78,11 @@ const Conductor = (player, _riffers,
       }
 
       const changeType = (() => {
-        if (chordProgressionIndex !== null) {
+        if (!allowedScaleIndexes.has(composer.scaleIndex) && allowedScaleIndexes.size > 0) {
+          composer.changeScaleIndex(randomChoice(Array.from(allowedScaleIndexes.values())));
+          return CHANGE_SCALE;
+        }
+        else if (chordProgressionIndex !== null) {
           const chordProgression = CHORD_PROGRESSIONS[chordProgressionIndex];
           const prevChordIndex = composer.chordIndex;
           composer.changeChordIndex(chordProgression[chordProgressionIndexI++]);
@@ -98,8 +100,16 @@ const Conductor = (player, _riffers,
           return CHANGE_RESET;
         }
         else if (randomChance(7)) { // scale
-          composer.changeScaleIndex(randomInt(composer.scales.length, composer.scaleIndex));
-          return CHANGE_SCALE;
+          const prevScaleIndex = composer.scaleIndex;
+          const nextScaleIndex = randomChoice(Array.from(allowedScaleIndexes.values()));
+
+          if (prevScaleIndex !== nextScaleIndex) {
+            composer.changeScaleIndex(nextScaleIndex);
+            return CHANGE_SCALE;
+          }
+          else {
+            return CHANGE_NONE;
+          }
         }
         else if (randomChance(5)) { // mode
           const isRelative = !randomChance(5);
@@ -151,6 +161,11 @@ const Conductor = (player, _riffers,
       })();
 
       changeCallback(changeType, player.currentTime, when, bars, composer.capture(), composerPrev);
+    }
+    else {
+      if (!allowedScaleIndexes.has(composer.scaleIndex) && allowedScaleIndexes.size > 0) {
+        composer.changeScaleIndex(randomChoice(Array.from(allowedScaleIndexes.values())));
+      }
     }
 
     riffers.forEach((riffer) => {
@@ -209,6 +224,7 @@ const Conductor = (player, _riffers,
     get changeCallback(){return changeCallback;},
     get bars(){return bars},
     get composer(){return composer;},
+    get allowedScaleIndexes(){return allowedScaleIndexes;},
     get player(){return player;},
     get running(){return running;},
     get lastBarScheduledFor(){return lastBarScheduledFor;},
@@ -287,5 +303,5 @@ export {
   BEAT_LENGTH_MILLIS, BEAT_LENGTH_SECS, NOTE_LENGTH_MILLIS, NOTE_LENGTH_SECS, BAR_LENGTH_MILLIS, BAR_LENGTH_SECS,
   CHORD_PROGRESSIONS,
   CHANGES, CHANGE_NONE, CHANGE_RESET, CHANGE_SCALE, CHANGE_KEY, CHANGE_MODE, CHANGE_CHORD, CHANGE_CHORD_TYPE,
-  Conductor, Sequencer, defaultComposer, defaultChangeCallback
+  Conductor, Sequencer, defaultChangeCallback
 };
