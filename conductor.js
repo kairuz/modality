@@ -96,7 +96,13 @@ const Conductor = (player, _riffers, composer, allowedScaleIndexes, changeCallba
           return CHANGE_NONE;
         }
         else if (randomChance(100)) {
+          const prevScaleIndex = composer.scaleIndex;
           composer.reset();
+
+          if (!allowedScaleIndexes.has(composer.scaleIndex)) {
+            composer.changeScaleIndex(prevScaleIndex)
+          }
+
           return CHANGE_RESET;
         }
         else if (randomChance(7)) { // scale
