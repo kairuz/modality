@@ -2,6 +2,24 @@ import {SCALES, scaleNameForOffsets, keyNameForIndex,
   modeNameForOffsets, chordNameForOffsets} from "./glossary.js";
 
 
+const MasterVolumeControl = () => {
+  let masterVolume = 80;
+  let masterVolumeStr = null;
+
+  return {
+    input: (event) => {
+      masterVolumeStr = event.target.value;
+    },
+    get masterVolume(){
+      if (masterVolumeStr !== null) {
+        masterVolume = parseInt(masterVolumeStr);
+        masterVolumeStr = null;
+      }
+      return masterVolume;
+    }
+  }
+};
+
 const ScaleToggleUi = (scaleIndex, scale, scaleName, includeCallback, excludeCallback, checked = true) => {
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
@@ -163,5 +181,5 @@ const CaptureDiffUi = (_capture, _prevCapture = _capture, bar, when, changeType)
 export {
   CAPTURE_FIELD_NAME_SCALE, CAPTURE_FIELD_NAME_ADJUSTED_MODE, CAPTURE_FIELD_NAME_CHORD_TYPE, CAPTURE_FIELD_NAMES_DISPLAY_CALLBACKS,
   DESIRED_CAPTURE_DIFF_FIELD_NAMES, DESIRED_CAPTURE_FIELD_NAMES,
-  ScaleToggleUi, CaptureUi, BarUi, CaptureDiffUi
+  MasterVolumeControl, ScaleToggleUi, CaptureUi, BarUi, CaptureDiffUi
 };
