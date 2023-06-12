@@ -9,6 +9,8 @@ import {PianoUi, MIN_INDEX, MAX_INDEX} from "./piano.js";
 import {MasterVolumeControl, ScaleToggleUi, CaptureDiffUi, BarUi, CaptureUi} from "./ui.js";
 
 
+const volumeFactorCallback = () => masterVolumeControl.masterVolume / 100;
+
 const leadRifferQueueCallback = (currPresetName, currentTime, when, whenOffset, duration, pitch, currVolume) => {
   if (pitch >= MIN_INDEX && pitch <= MAX_INDEX) {
     const selectTimeoutId = setTimeout(() => {
@@ -87,7 +89,7 @@ const audioContextLoader = LazyLoader(() => {
 const audioContextAndConductorLoader = LazyLoader(() => {
   return audioContextLoader
       .get()
-      .then((audioContext) => initConductor(audioContext, allowedScaleIndexes, leadRifferQueueCallback, conductorChangeCallback)
+      .then((audioContext) => initConductor(audioContext, volumeFactorCallback, allowedScaleIndexes, leadRifferQueueCallback, conductorChangeCallback)
           .then((conductor) => Promise.resolve([audioContext, conductor])));
 });
 
