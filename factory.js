@@ -1,6 +1,6 @@
 import {SCALES} from "./glossary.js";
 import {AllowedIndexes} from "./util.js";
-import {initPlayer} from "./player.js";
+import {initPlayer, defaultVolumeFactorCallback} from "./player.js";
 import {Conductor, defaultChangeCallback} from "./conductor.js";
 import {Composer} from "./composer.js";
 import riffRhythmDrums from "./riffer-rhythm-drums.js";
@@ -13,11 +13,12 @@ const defaultAllowedScaleIndexes = AllowedIndexes(SCALES.length);
 
 export default (
     audioContext,
+    volumeFactorCallback = defaultVolumeFactorCallback,
     allowedScaleIndexes = defaultAllowedScaleIndexes,
     leadRifferQueueCallback = defaultLeadRifferQueueCallback,
     conductorChangeCallback = defaultChangeCallback
 ) => {
-  return initPlayer(audioContext)
+  return initPlayer(audioContext, volumeFactorCallback)
       .then((player) => {
         const leadRiffer = LeadRiffer(leadRifferQueueCallback);
         const riffers = [riffRhythmDrums, riffRhythmBassGuitar, riffRhythmGuitar, leadRiffer.riffLead];

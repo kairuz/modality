@@ -1,6 +1,12 @@
-<html>
+<html lang="en">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <head>
+<title>Modality Piano</title>
 <style>
+
+#master-volume {
+  margin-left: 10px;
+}
 
 #allowed-scales {
   margin-top: 20px;
@@ -83,6 +89,7 @@
 <div>
   <button id="buttonStart">Start</button>
   <button id="buttonStop">Stop</button>
+  <input type="range" id="master-volume" min="0" max="100" style="visibility: hidden;"><label id="master-volume-label" for="master-volume" style="visibility: hidden;">🔊</label>
   <div id="allowed-scales"></div>
 </div>
 <div id="capture-ui"></div>

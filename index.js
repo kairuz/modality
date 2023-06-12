@@ -6,8 +6,10 @@ import {LazyLoader, AllowedIndexes} from "./util.js";
 import {CHANGE_NONE} from "./conductor.js";
 import initConductor from "./factory.js";
 import {PianoUi, MIN_INDEX, MAX_INDEX} from "./piano.js";
-import {ScaleToggleUi, CaptureDiffUi, BarUi, CaptureUi} from "./ui.js";
+import {MasterVolumeControl, ScaleToggleUi, CaptureDiffUi, BarUi, CaptureUi} from "./ui.js";
 
+
+const volumeFactorCallback = () => masterVolumeControl.masterVolume / 100;
 
 const leadRifferQueueCallback = (currPresetName, currentTime, when, whenOffset, duration, pitch, currVolume) => {
   if (pitch >= MIN_INDEX && pitch <= MAX_INDEX) {
@@ -87,7 +89,7 @@ const audioContextLoader = LazyLoader(() => {
 const audioContextAndConductorLoader = LazyLoader(() => {
   return audioContextLoader
       .get()
-      .then((audioContext) => initConductor(audioContext, allowedScaleIndexes, leadRifferQueueCallback, conductorChangeCallback)
+      .then((audioContext) => initConductor(audioContext, volumeFactorCallback, allowedScaleIndexes, leadRifferQueueCallback, conductorChangeCallback)
           .then((conductor) => Promise.resolve([audioContext, conductor])));
 });
 
@@ -172,6 +174,17 @@ const start = () => {
       });
 };
 
+const masterVolumeControl = MasterVolumeControl();
+
+const loadMasterVolumeControl = () => {
+  const masterVolumeInput = document.getElementById('master-volume');
+  const masterVolumeInputLabel = document.getElementById('master-volume-label');
+  masterVolumeInput.value = `${masterVolumeControl.masterVolume}`;
+  masterVolumeInput.style.visibility = null;
+  masterVolumeInputLabel.style.visibility = null;
+  masterVolumeInput.addEventListener('input', masterVolumeControl.input);
+};
+
 const loadAllowedScalesCheckboxes = () => {
   let disabledScaleToggleUiIndex = null;
 
@@ -219,6 +232,7 @@ const loadAllowedScalesCheckboxes = () => {
 };
 
 window.addEventListener('load', () => {
+  loadMasterVolumeControl();
   loadAllowedScalesCheckboxes();
   document.getElementById('buttonStop').addEventListener('click', stop);
   document.getElementById('buttonStart').addEventListener('click', start);
