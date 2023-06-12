@@ -105,8 +105,18 @@ const Riff = () => {
   }
 };
 
+const PlayerContext = (audioContext, webAudioFontPlayer, presets, volumeFactorCallback) => {
+  return {
+    get audioContext(){return audioContext;},
+    get webAudioFontPlayer(){return webAudioFontPlayer},
+    get presets(){return presets;},
+    get volumeFactor(){return volumeFactorCallback();}
+  };
+};
 
-const initPlayerContext = (audioContext) => {
+const defaultVolumeFactorCallback = () => 1;
+
+const initPlayerContext = (audioContext, volumeFactorCallback = defaultVolumeFactorCallback) => {
   return new Promise((resolve, reject) => {
     if (audioContext.state !== 'running') {
       reject('invalid audioContext state');
@@ -127,19 +137,11 @@ const initPlayerContext = (audioContext) => {
         return acc;
       }, {}));
 
-      const playerContext = PlayerContext(audioContext, webAudioFontPlayer, presets);
+      const playerContext = PlayerContext(audioContext, webAudioFontPlayer, presets, volumeFactorCallback);
 
       resolve(playerContext);
     });
   });
-};
-
-const PlayerContext = (audioContext, webAudioFontPlayer, presets) => {
-  return {
-    get audioContext(){return audioContext;},
-    get webAudioFontPlayer(){return webAudioFontPlayer},
-    get presets(){return presets;}
-  };
 };
 
 const Player = (playerContext) => {
@@ -152,10 +154,14 @@ const Player = (playerContext) => {
     playingNodes.add(node);
   };
 
+  const calcVolume = (volume) => {
+    return Math.max(Number.MIN_VALUE, Math.min(playerContext.volumeFactor * volume, 1));
+  };
+
   const strike = (strike) => {
     const gainNode = playerContext.webAudioFontPlayer.queueWaveTable(
         playerContext.audioContext, playerContext.audioContext.destination,
-        playerContext.presets[strike.presetName], strike.when, strike.pitch, strike.duration, strike.volume);
+        playerContext.presets[strike.presetName], strike.when, strike.pitch, strike.duration, calcVolume(strike.volume));
     const node = gainNode.audioBufferSourceNode;
     addPlayingNode(node);
   };
@@ -167,7 +173,7 @@ const Player = (playerContext) => {
     const pitches = [...strum.pitches]; // need mutable copy as webaudiofont sorts pitches array
     const gainNodes = strumFn.bind(playerContext.webAudioFontPlayer)(playerContext.audioContext, playerContext.audioContext.destination,
                                                                      playerContext.presets[strum.presetName], strum.when, pitches,
-                                                                     strum.duration, strum.volume);
+                                                                     strum.duration, calcVolume(strum.volume));
     gainNodes.forEach((gainNode) => {
       const node = gainNode.audioBufferSourceNode;
       addPlayingNode(node);
@@ -195,8 +201,8 @@ const Player = (playerContext) => {
   };
 };
 
-const initPlayer = (audioContext) => {
-  return initPlayerContext(audioContext)
+const initPlayer = (audioContext, volumeFactorCallback = defaultVolumeFactorCallback) => {
+  return initPlayerContext(audioContext, volumeFactorCallback)
       .then((playerContext) => Promise.resolve(Player(playerContext)));
 };
 
@@ -209,5 +215,5 @@ export {
   PRESET_NAME_DRUMS_KICK, PRESET_NAME_DRUMS_SNARE,
   PRESET_NAME_DRUMS_CRASH, PRESET_NAME_DRUMS_HIHAT, PRESET_NAME_DRUMS_HIHAT_OPEN, PRESET_NAMES,
   PLAY_TYPE_STRIKE, PLAY_TYPE_STRUM,
-  Riff, initPlayer
+  Riff, initPlayer, defaultVolumeFactorCallback
 };
