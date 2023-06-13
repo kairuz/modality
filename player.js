@@ -47,6 +47,7 @@ const PITCHES = Object.freeze({
 const PLAY_TYPE_STRIKE = 0;
 const PLAY_TYPE_STRUM = 1;
 
+const DEFAULT_VOLUME_FACTOR = 0.8;
 
 const Strike = (presetName, when, pitch, duration, volume = 1) => {
   if (!PRESET_NAMES.includes(presetName)) {
@@ -215,5 +216,6 @@ export {
   PRESET_NAME_DRUMS_KICK, PRESET_NAME_DRUMS_SNARE,
   PRESET_NAME_DRUMS_CRASH, PRESET_NAME_DRUMS_HIHAT, PRESET_NAME_DRUMS_HIHAT_OPEN, PRESET_NAMES,
   PLAY_TYPE_STRIKE, PLAY_TYPE_STRUM,
+  DEFAULT_VOLUME_FACTOR,
   Riff, initPlayer, defaultVolumeFactorCallback
 };
