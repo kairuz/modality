@@ -1,9 +1,10 @@
 import {SCALES, scaleNameForOffsets, keyNameForIndex,
   modeNameForOffsets, chordNameForOffsets} from "./glossary.js";
+import {DEFAULT_VOLUME_FACTOR} from "./player.js";
 
 
 const MasterVolumeControl = () => {
-  let masterVolume = 80;
+  let masterVolume = DEFAULT_VOLUME_FACTOR * 100;
   let masterVolumeStr = null;
 
   return {

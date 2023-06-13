@@ -1,5 +1,5 @@
 import {CHORD_TYPE_TETRAD, CHORD_TYPES, NOTES, SEMITONES} from "./scale.js";
-import {indexForKeyName, cyclicKeyIndex, chordNameForOffsets} from "./glossary.js";
+import {KEY_C, indexForKeyName, cyclicKeyIndex, chordNameForOffsets} from "./glossary.js";
 
 
 const CHORD_COLOR_TONIC = 0;
@@ -27,7 +27,7 @@ const Composer = (_scales) => {
   let octave = DEFAULT_OCTAVE;
   let scaleIndex = 0;
 
-  let parentKeyIndex = indexForKeyName('C');
+  let parentKeyIndex = indexForKeyName(KEY_C);
   let modeKeyIndex = parentKeyIndex;
   let chordKeyIndex = modeKeyIndex;
 
@@ -57,7 +57,7 @@ const Composer = (_scales) => {
     octave = DEFAULT_OCTAVE;
     scaleIndex = 0;
 
-    parentKeyIndex = indexForKeyName('C');
+    parentKeyIndex = indexForKeyName(KEY_C);
     modeKeyIndex = parentKeyIndex;
     chordKeyIndex = modeKeyIndex;
 
