@@ -51,7 +51,7 @@ const conductorChangeCallback = (changeType, currentTime, when, bar, composerCap
       captureDiffAndPrevPianoDiv.appendChild(ui.div);
       captureDiffAndPrevPianoDiv.appendChild(prevPianoDiv);
       const prevPianoUi = PianoUi();
-      updatePianoKeyColor(composerPrevCapture, prevPianoUi, 'lightcoral', 'lightcoral', 'indianred', 'indianred', 1, 2);
+      updatePianoKeyColor(composerPrevCapture, prevPianoUi, 'lightcoral', 'lightcoral', 'crimson', 'crimson', 1, 2);
       updatePianoKeyColor(composerCapture, prevPianoUi, 'lightgreen', 'lightgreen', 'olivedrab', 'olivedrab', 4, 5);
       prevPianoDiv.appendChild(prevPianoUi.div);
       uiDivsBuffer.push(captureDiffAndPrevPianoDiv);
