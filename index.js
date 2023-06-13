@@ -234,6 +234,6 @@ const loadAllowedScalesCheckboxes = () => {
 window.addEventListener('load', () => {
   loadMasterVolumeControl();
   loadAllowedScalesCheckboxes();
-  document.getElementById('buttonStop').addEventListener('click', stop);
-  document.getElementById('buttonStart').addEventListener('click', start);
+  document.getElementById('button-stop').addEventListener('click', stop);
+  document.getElementById('button-start').addEventListener('click', start);
 });
