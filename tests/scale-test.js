@@ -3,296 +3,295 @@ import {test} from 'uvu';
 import * as assert from 'uvu/assert';
 
 
-test('should convert pattern string to flags array', () => {
-  {
+[
+  () => {
     const input = '8970807023';
     assert.throws(() => scaleLib.patternToFlags(input), undefined, `patternToFlags expected error for input ${input}`);
-  }
-  {
+  },
+  () => {
     const input = 101011010101;
     assert.throws(() => scaleLib.patternToFlags(input), undefined, `patternToFlags expected error for input ${input}`);
-  }
-  {
+  },
+  () => {
     const input = '101011010100';
     assert.throws(() => scaleLib.patternToFlags(input), undefined, `patternToFlags expected error for input ${input}`);
-  }
-  {
+  },
+  () => {
     const input = '10101101011';
     assert.throws(() => scaleLib.patternToFlags(input), undefined, `patternToFlags expected error for input ${input}`);
-  }
-  {
+  },
+  () => {
     const input = [1, 1, 1, 1, 1, 0];
     assert.throws(() => scaleLib.patternToFlags(input), undefined, `patternToFlags expected error for input ${input}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,0,1,0,1,1,0,1,0,1,0,1];
     const actual = scaleLib.patternToFlags('101011010101');
     assert.equal(actual, expected, `patternToFlags error: actual ${actual}, expected ${expected}`);
   }
+].forEach((tf) => test('should convert pattern string to flags array', tf));
 
-});
-
-test('should convert flags array to mode flags at index', () => {
-  {
+[
+  () => {
     const expected = [1,0,1,0,1,1,0,1,0,1,0,1];
     const actual = scaleLib.flagsToModeFlagsAtIndex([1,0,1,0,1,1,0,1,0,1,0,1], 0);
     assert.equal(actual, expected, `flagsToModeFlagsAtIndex error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,0,1,1,0,1,0,1,0,1,1,0];
     const actual = scaleLib.flagsToModeFlagsAtIndex([1,0,1,0,1,1,0,1,0,1,0,1], 2);
     assert.equal(actual, expected, `flagsToModeFlagsAtIndex error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,1,0,1,0,1,0,1,1,0,1,0,];
     const actual = scaleLib.flagsToModeFlagsAtIndex([1,0,1,0,1,1,0,1,0,1,0,1], 4);
     assert.equal(actual, expected, `flagsToModeFlagsAtIndex error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,0,1,0,1,0,1,1,0,1,0,1];
     const actual = scaleLib.flagsToModeFlagsAtIndex([1,0,1,0,1,1,0,1,0,1,0,1], 5);
     assert.equal(actual, expected, `flagsToModeFlagsAtIndex error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,0,1,0,1,1,0,1,0,1,1,0];
     const actual = scaleLib.flagsToModeFlagsAtIndex([1,0,1,0,1,1,0,1,0,1,0,1], 7);
     assert.equal(actual, expected, `flagsToModeFlagsAtIndex error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,0,1,1,0,1,0,1,1,0,1,0];
     const actual = scaleLib.flagsToModeFlagsAtIndex([1,0,1,0,1,1,0,1,0,1,0,1], 9);
     assert.equal(actual, expected, `flagsToModeFlagsAtIndex error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,1,0,1,0,1,1,0,1,0,1,0];
     const actual = scaleLib.flagsToModeFlagsAtIndex([1,0,1,0,1,1,0,1,0,1,0,1], 11);
     assert.equal(actual, expected, `flagsToModeFlagsAtIndex error: actual ${actual}, expected ${expected}`);
   }
-});
+].forEach((tf) => test('should convert flags array to mode flags at index', tf));
 
-test('should convert flags to mode flags', () => {
-  {
+[
+  () => {
     const expected = [1,0,1,0,1,1,0,1,0,1,0,1];
     const actual = scaleLib.flagsToModeFlags([1,0,1,0,1,1,0,1,0,1,0,1], 0);
     assert.equal(actual, expected, `flagsToModeFlags error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,0,1,1,0,1,0,1,0,1,1,0];
     const actual = scaleLib.flagsToModeFlags([1,0,1,0,1,1,0,1,0,1,0,1], 1);
     assert.equal(actual, expected, `flagsToModeFlags error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,1,0,1,0,1,0,1,1,0,1,0];
     const actual = scaleLib.flagsToModeFlags([1,0,1,0,1,1,0,1,0,1,0,1], 2);
     assert.equal(actual, expected, `flagsToModeFlags error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,0,1,0,1,0,1,1,0,1,0,1];
     const actual = scaleLib.flagsToModeFlags([1,0,1,0,1,1,0,1,0,1,0,1], 3);
     assert.equal(actual, expected, `flagsToModeFlags error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,0,1,0,1,1,0,1,0,1,1,0];
     const actual = scaleLib.flagsToModeFlags([1,0,1,0,1,1,0,1,0,1,0,1], 4);
     assert.equal(actual, expected, `flagsToModeFlags error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,0,1,1,0,1,0,1,1,0,1,0];
     const actual = scaleLib.flagsToModeFlags([1,0,1,0,1,1,0,1,0,1,0,1], 5);
     assert.equal(actual, expected, `flagsToModeFlags error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,1,0,1,0,1,1,0,1,0,1,0];
     const actual = scaleLib.flagsToModeFlags([1,0,1,0,1,1,0,1,0,1,0,1], 6);
     assert.equal(actual, expected, `flagsToModeFlags error: actual ${actual}, expected ${expected}`);
   }
-});
+].forEach((tf) => test('should convert flags to mode flags', tf));
 
-test('should convert flags array to intervals array', () => {
-  {
+[
+  () => {
     const expected = [2,2,1,2,2,2,1];
     const actual = scaleLib.flagsToIntervals([1,0,1,0,1,1,0,1,0,1,0,1]);
     assert.equal(actual, expected, `flagsToIntervals error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [2,2,1,2,2,2,1];
     const actual = scaleLib.flagsToIntervals([1,0,1,0,1,1,0,1,0,1,0,1]);
     assert.equal(actual, expected, `flagsToIntervals error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [2,1,2,2,2,1,2];
     const actual = scaleLib.flagsToIntervals([1,0,1,1,0,1,0,1,0,1,1,0]);
     assert.equal(actual, expected, `flagsToIntervals error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,2,2,2,1,2,2];
     const actual = scaleLib.flagsToIntervals([1,1,0,1,0,1,0,1,1,0,1,0]);
     assert.equal(actual, expected, `flagsToIntervals error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [2,2,2,1,2,2,1];
     const actual = scaleLib.flagsToIntervals([1,0,1,0,1,0,1,1,0,1,0,1]);
     assert.equal(actual, expected, `flagsToIntervals error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [2,2,1,2,2,1,2];
     const actual = scaleLib.flagsToIntervals([1,0,1,0,1,1,0,1,0,1,1,0]);
     assert.equal(actual, expected, `flagsToIntervals error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [2,1,2,2,1,2,2];
     const actual = scaleLib.flagsToIntervals([1,0,1,1,0,1,0,1,1,0,1,0]);
     assert.equal(actual, expected, `flagsToIntervals error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [1,2,2,1,2,2,2];
     const actual = scaleLib.flagsToIntervals([1,1,0,1,0,1,1,0,1,0,1,0]);
     assert.equal(actual, expected, `flagsToIntervals error: actual ${actual}, expected ${expected}`);
   }
+].forEach((tf) => test('should convert flags array to intervals array', tf));
 
-});
-
-test('should convert flags array to offsets array', () => {
-  {
+[
+  () => {
     const expected = [0, 2, 4, 5, 7, 9, 11];
     const actual = scaleLib.flagsToOffsets([1,0,1,0,1,1,0,1,0,1,0,1]);
     assert.equal(actual, expected, `flagsToOffsets error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [0, 2, 3, 5, 7, 9, 10];
     const actual = scaleLib.flagsToOffsets([1,0,1,1,0,1,0,1,0,1,1,0]);
     assert.equal(actual, expected, `flagsToOffsets error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [0, 1, 3, 5, 7, 8, 10];
     const actual = scaleLib.flagsToOffsets([1,1,0,1,0,1,0,1,1,0,1,0]);
     assert.equal(actual, expected, `flagsToOffsets error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [0, 2, 4, 6, 7, 9, 11];
     const actual = scaleLib.flagsToOffsets([1,0,1,0,1,0,1,1,0,1,0,1]);
     assert.equal(actual, expected, `flagsToOffsets error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [0, 2, 4, 5, 7, 9, 10];
     const actual = scaleLib.flagsToOffsets([1,0,1,0,1,1,0,1,0,1,1,0]);
     assert.equal(actual, expected, `flagsToOffsets error: actual ${actual}, expected ${expected}`);
-  }
+  },
+  () =>
   {
     const expected = [0, 2, 3, 5, 7, 8, 10];
     const actual = scaleLib.flagsToOffsets([1,0,1,1,0,1,0,1,1,0,1,0]);
     assert.equal(actual, expected, `flagsToOffsets error: actual ${actual}, expected ${expected}`);
-  }
+  },
+  () =>
   {
     const expected = [0, 1, 3, 5, 6, 8, 10];
     const actual = scaleLib.flagsToOffsets([1,1,0,1,0,1,1,0,1,0,1,0]);
     assert.equal(actual, expected, `flagsToOffsets error: actual ${actual}, expected ${expected}`);
   }
-});
+].forEach((tf) => test('should convert flags array to offsets array', tf));
 
-test('should convert offsets array to intervals array', () => {
-  {
+[
+  () => {
     const input = ['a', 'b', 'c'];
     assert.throws(() => scaleLib.patternToFlags(input), undefined, `offsetsToIntervals expected error for input ${input}`);
-  }
-  {
+  },
+  () => {
     const input = [1, 1.2, 2];
     assert.throws(() => scaleLib.patternToFlags(input), undefined, `offsetsToIntervals expected error for input ${input}`);
-  }
-  {
+  },
+  () => {
     const input = null;
     assert.throws(() => scaleLib.patternToFlags(input), undefined, `offsetsToIntervals expected error for input ${input}`);
-  }
-  {
+  },
+  () => {
     const input = [[2, 2, 1, 2, 2, 2, 1], 'a'];
     assert.throws(() => scaleLib.patternToFlags(...input), undefined, `offsetsToIntervals expected error for input ${input}`);
-  }
-  {
+  },
+  () => {
     const expected = [2, 2, 1, 2, 2, 2, 1];
     const actual = scaleLib.offsetsToIntervals([0, 2, 4, 5, 7, 9, 11], 12);
     assert.equal(actual, expected, `offsetsToIntervals error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [2, 2, 1, 2, 2, 2];
     const actual = scaleLib.offsetsToIntervals([0, 2, 4, 5, 7, 9, 11]);
     assert.equal(actual, expected, `offsetsToIntervals error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [4, 3, 4];
     const actual = scaleLib.offsetsToIntervals([0, 4, 7, 11]);
     assert.equal(actual, expected, `offsetsToIntervals error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [3, 4, 3];
     const actual = scaleLib.offsetsToIntervals([0, 3, 7, 10]);
     assert.equal(actual, expected, `offsetsToIntervals error: actual ${actual}, expected ${expected}`);
   }
-});
+].forEach((tf) => test('should convert offsets array to intervals array', tf));
 
-test('should convert mode offsets array to tetrad offsets array', () => {
-  {
+[
+  () => {
     const expected = [0, 4, 7, 11];
     const actual = scaleLib.modeOffsetsToTetradOffsets([0, 2, 4, 5, 7, 9, 11]);
     assert.equal(actual, expected, `modeOffsetsToTetradOffsets error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [0, 3, 7, 10];
     const actual = scaleLib.modeOffsetsToTetradOffsets([0, 2, 3, 5, 7, 9, 10]);
     assert.equal(actual, expected, `modeOffsetsToTetradOffsets error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [0, 3, 7, 10];
     const actual = scaleLib.modeOffsetsToTetradOffsets([0, 1, 3, 5, 7, 8, 10]);
     assert.equal(actual, expected, `modeOffsetsToTetradOffsets error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [0, 4, 7, 11];
     const actual = scaleLib.modeOffsetsToTetradOffsets([0, 2, 4, 6, 7, 9, 11]);
     assert.equal(actual, expected, `modeOffsetsToTetradOffsets error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [0, 4, 7, 10];
     const actual = scaleLib.modeOffsetsToTetradOffsets([0, 2, 4, 5, 7, 9, 10]);
     assert.equal(actual, expected, `modeOffsetsToTetradOffsets error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [0, 3, 7, 10];
     const actual = scaleLib.modeOffsetsToTetradOffsets([0, 2, 3, 5, 7, 8, 10]);
     assert.equal(actual, expected, `modeOffsetsToTetradOffsets error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [0, 3, 6, 10];
     const actual = scaleLib.modeOffsetsToTetradOffsets([0, 1, 3, 5, 6, 8, 10]);
     assert.equal(actual, expected, `modeOffsetsToTetradOffsets error: actual ${actual}, expected ${expected}`);
   }
-});
+].forEach((tf) => test('should convert mode offsets array to tetrad offsets array', tf));
 
-test('should convert tetrad offsets array to triad offsets array', () => {
-  {
+[
+  () => {
     const expected = [0, 4, 7];
     const actual = scaleLib.tetradOffsetsToTriadOffsets([0, 4, 7, 11]);
     assert.equal(actual, expected, `tetradOffsetsToTriadOffsets error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [0, 3, 7];
     const actual = scaleLib.tetradOffsetsToTriadOffsets([0, 3, 7, 10]);
     assert.equal(actual, expected, `tetradOffsetsToTriadOffsets error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [0, 4, 7];
     const actual = scaleLib.tetradOffsetsToTriadOffsets([0, 4, 7, 10]);
     assert.equal(actual, expected, `tetradOffsetsToTriadOffsets error: actual ${actual}, expected ${expected}`);
-  }
-  {
+  },
+  () => {
     const expected = [0, 3, 6];
     const actual = scaleLib.tetradOffsetsToTriadOffsets([0, 3, 6, 10]);
     assert.equal(actual, expected, `tetradOffsetsToTriadOffsets error: actual ${actual}, expected ${expected}`);
   }
+].forEach((tf) => test('should convert tetrad offsets array to triad offsets array', tf));
 
-});
-
-test('should construct scale with fields', () => {
-  {
+[
+  () => {
     const expectedPattern = '101011010101';
     const expectedFlags = [1,0,1,0,1,1,0,1,0,1,0,1];
     const expectedNotes = 7;
@@ -340,8 +339,8 @@ test('should construct scale with fields', () => {
     assert.equal(actual.triadsIntervals[0], expectedTriads0Intervals, `scale.triadsIntervals[0] error: actual ${actual.triadsIntervals[0]}, expected ${expectedTriads0Intervals}`);
     assert.equal(actual.triadsIntervals[1], expectedTriads1Intervals, `scale.triadsIntervals[1] error: actual ${actual.triadsIntervals[1]}, expected ${expectedTriads1Intervals}`);
     assert.equal(actual.triadsIntervals[6], expectedTriads6Intervals, `scale.triadsIntervals[6] error: actual ${actual.triadsIntervals[6]}, expected ${expectedTriads6Intervals}`);
-  }
-  {
+  },
+  () => {
     const expectedPattern = '101011011001';
     const expectedFlags = [1,0,1,0,1,1,0,1,1,0,0,1];
     const expectedNotes = 7;
@@ -390,7 +389,6 @@ test('should construct scale with fields', () => {
     assert.equal(actual.triadsIntervals[1], expectedTriads1Intervals, `scale.triadsIntervals[1] error: actual ${actual.triadsIntervals[1]}, expected ${expectedTriads1Intervals}`);
     assert.equal(actual.triadsIntervals[6], expectedTriads6Intervals, `scale.triadsIntervals[6] error: actual ${actual.triadsIntervals[6]}, expected ${expectedTriads6Intervals}`);
   }
-
-});
+].forEach((tf) => test('should construct scale with fields', tf));
 
 test.run();
