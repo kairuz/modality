@@ -106,18 +106,15 @@ const Riff = () => {
   }
 };
 
-const PlayerContext = (audioContext, webAudioFontPlayer, presets, volumeFactorCallback) => {
+const PlayerContext = (audioContext, webAudioFontPlayer, presets) => {
   return {
     get audioContext(){return audioContext;},
     get webAudioFontPlayer(){return webAudioFontPlayer},
-    get presets(){return presets;},
-    get volumeFactor(){return volumeFactorCallback();}
+    get presets(){return presets;}
   };
 };
 
-const defaultVolumeFactorCallback = () => 1;
-
-const initPlayerContext = (audioContext, volumeFactorCallback = defaultVolumeFactorCallback) => {
+const initPlayerContext = (audioContext) => {
   return new Promise((resolve, reject) => {
     if (audioContext.state !== 'running') {
       reject('invalid audioContext state');
@@ -138,14 +135,16 @@ const initPlayerContext = (audioContext, volumeFactorCallback = defaultVolumeFac
         return acc;
       }, {}));
 
-      const playerContext = PlayerContext(audioContext, webAudioFontPlayer, presets, volumeFactorCallback);
+      const playerContext = PlayerContext(audioContext, webAudioFontPlayer, presets);
 
       resolve(playerContext);
     });
   });
 };
 
-const Player = (playerContext) => {
+const defaultVolumeFactorCallback = () => 1;
+
+const Player = (playerContext, volumeFactorCallback = defaultVolumeFactorCallback) => {
   const playingNodes = new Set();
 
   const addPlayingNode = (node) => {
@@ -156,7 +155,7 @@ const Player = (playerContext) => {
   };
 
   const calcVolume = (volume) => {
-    return Math.max(Number.MIN_VALUE, Math.min(playerContext.volumeFactor * volume, 1));
+    return Math.max(Number.MIN_VALUE, Math.min(volumeFactorCallback() * volume, 1));
   };
 
   const strike = (strike) => {
@@ -203,8 +202,8 @@ const Player = (playerContext) => {
 };
 
 const initPlayer = (audioContext, volumeFactorCallback = defaultVolumeFactorCallback) => {
-  return initPlayerContext(audioContext, volumeFactorCallback)
-      .then((playerContext) => Promise.resolve(Player(playerContext)));
+  return initPlayerContext(audioContext)
+      .then((playerContext) => Promise.resolve(Player(playerContext, volumeFactorCallback)));
 };
 
 
