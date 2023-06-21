@@ -66,7 +66,7 @@ const Conductor = (player, _riffers, composer, allowedScaleIndexes, changeCallba
   let chordProgressionIndex = null;
   let chordProgressionIndexI = null;
 
-  const sequencer = Sequencer(player);
+  const sequencer = Sequencer(player, Heap((p1, p2) => p1.when - p2.when));
 
   const queueBar = (when) => {
     if (bars > 0) {
@@ -247,9 +247,7 @@ const Conductor = (player, _riffers, composer, allowedScaleIndexes, changeCallba
 const SEQUENCE_AHEAD_SECS = 0.2;
 const SEQUENCE_AHEAD_MILLIS = SEQUENCE_AHEAD_SECS * 1000;
 
-const Sequencer = (player) => {
-  const plays = Heap((p1, p2) => p1.when - p2.when);
-
+const Sequencer = (player, plays) => {
   let running = null;
 
   const sequence = () => {
