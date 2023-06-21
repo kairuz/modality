@@ -247,6 +247,9 @@ const Conductor = (player, _riffers, composer, allowedScaleIndexes, changeCallba
 const SEQUENCE_AHEAD_SECS = 0.2;
 const SEQUENCE_AHEAD_MILLIS = SEQUENCE_AHEAD_SECS * 1000;
 
+const FLUSH_UNORDERED = 0;
+const FLUSH_ORDERED = 1;
+
 const Sequencer = (player, plays) => {
   let running = null;
 
@@ -282,12 +285,23 @@ const Sequencer = (player, plays) => {
     setTimeout(checkSequenceLoop);
   };
 
-  const stop = (unsequencedPlaysCallback = null) => {
+  const stop = (unsequencedPlaysCallback = null, flush = FLUSH_UNORDERED) => {
     running = false;
 
     if (typeof unsequencedPlaysCallback === 'function') {
       const unsequencedPlays = Array.from(plays.values());
       unsequencedPlaysCallback(unsequencedPlays);
+    }
+
+    if (flush === FLUSH_UNORDERED) {
+      for (const play of plays.values()) {
+        player.play(play);
+      }
+    }
+    else if (flush === FLUSH_ORDERED) {
+      while (plays.isNotEmpty) {
+        player.play(plays.pop());
+      }
     }
 
     plays.clear();
@@ -307,5 +321,6 @@ export {
   BEAT_LENGTH_MILLIS, BEAT_LENGTH_SECS, NOTE_LENGTH_MILLIS, NOTE_LENGTH_SECS, BAR_LENGTH_MILLIS, BAR_LENGTH_SECS,
   CHORD_PROGRESSIONS,
   CHANGES, CHANGE_NONE, CHANGE_RESET, CHANGE_SCALE, CHANGE_KEY, CHANGE_MODE, CHANGE_CHORD, CHANGE_CHORD_TYPE,
+  FLUSH_UNORDERED, FLUSH_ORDERED,
   Conductor, Sequencer, defaultChangeCallback
 };
