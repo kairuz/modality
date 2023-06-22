@@ -2,12 +2,14 @@ import {Heap} from "../util.js";
 import {Sequencer, FLUSH_ORDERED, FLUSH_UNORDERED} from "../conductor.js";
 
 export default () => {
+  const now = typeof performance !== "undefined" ? () => performance.now() : () => Date.now();
+
   const MockPlayer = () => {
     return {
       play: (play) => {
         // console.log(`mockPlayer play ${play}`);
       },
-      get currentTime(){return Date.now();}
+      get currentTime(){return now();}
     };
   };
 
@@ -195,7 +197,7 @@ export default () => {
         ['   list', listBasedSequencer]
       ].forEach(([typeName, sequencer]) => {
 
-        const startTime = Date.now();
+        const startTime = now();
         for (let i = 0; i < ITERATIONS; i++) {
           rands.forEach((rand) => {
             sequencer.add({when: rand});
@@ -203,7 +205,7 @@ export default () => {
           sequencer.stop(null, flushType);
         }
 
-        const endTime = Date.now();
+        const endTime = now();
 
         console.log(`${typeName}, ${endTime - startTime} millis,\t${ITERATIONS} iters, ${noOfPlays} plays,\t${flushName}`);
       });
