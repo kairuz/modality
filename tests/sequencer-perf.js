@@ -1,5 +1,5 @@
 import {Heap} from "../util.js";
-import {Sequencer, FLUSH_ORDERED, FLUSH_UNORDERED} from "../conductor.js";
+import {Sequencer, FLUSH_ORDERED, FLUSH_UNORDERED, FLUSH_NONE} from "../conductor.js";
 
 export default () => {
   const now = typeof performance !== "undefined" ? () => performance.now() : () => Date.now();
@@ -189,7 +189,7 @@ export default () => {
   const NO_OF_PLAYS = [50, 500, 5000];
 
   NO_OF_PLAYS.forEach((noOfPlays) => {
-    [[FLUSH_UNORDERED, 'flush-unordered'], [FLUSH_ORDERED, 'flush-ordered']].forEach(([flushType, flushName]) => {
+    [[FLUSH_UNORDERED, 'flush-unordered'], [FLUSH_ORDERED, 'flush-ordered'], [FLUSH_NONE, 'flush-none']].forEach(([flushType, flushName]) => {
       const rands = Array.from(Array(noOfPlays)).map(() => Math.trunc(Math.random() * 10000) / 1000);
       [
         ['               heap', heapBasedSequencer],
