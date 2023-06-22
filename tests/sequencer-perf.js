@@ -13,7 +13,7 @@ export default () => {
     };
   };
 
-  const SortedPlayList = (compare) => {
+  const SortOnAddPlayList = (compare) => {
     const isLessThan = (a, b) => compare(a, b) < 0;
 
     const arr = [];
@@ -64,7 +64,7 @@ export default () => {
     }
   };
 
-  const SortedPlayLinkedList = (compare) => {
+  const SortOnAddPlayLinkedList = (compare) => {
     const isLessThan = (a, b) => compare(a, b) < 0;
 
     const Node = () => {
@@ -182,8 +182,8 @@ export default () => {
 
 
   const heapBasedSequencer = Sequencer(MockPlayer(), Heap((p1, p2) => p1.when - p2.when));
-  const linkedListBasedSequencer = Sequencer(MockPlayer(), SortedPlayLinkedList((p1, p2) => p1.when - p2.when));
-  const listBasedSequencer = Sequencer(MockPlayer(), SortedPlayList((p1, p2) => p1.when - p2.when));
+  const sortOnAddLinkedListSequencer = Sequencer(MockPlayer(), SortOnAddPlayLinkedList((p1, p2) => p1.when - p2.when));
+  const sortOnAddListSequencer = Sequencer(MockPlayer(), SortOnAddPlayList((p1, p2) => p1.when - p2.when));
 
   const ITERATIONS = 100;
   const NO_OF_PLAYS = [50, 500, 5000];
@@ -192,9 +192,9 @@ export default () => {
     [[FLUSH_UNORDERED, 'flush-unordered'], [FLUSH_ORDERED, 'flush-ordered']].forEach(([flushType, flushName]) => {
       const rands = Array.from(Array(noOfPlays)).map(() => Math.trunc(Math.random() * 10000) / 1000);
       [
-        ['   heap', heapBasedSequencer],
-        ['lnkdLst', linkedListBasedSequencer],
-        ['   list', listBasedSequencer]
+        ['               heap', heapBasedSequencer],
+        ['sortOnAddLinkedList', sortOnAddLinkedListSequencer],
+        ['      sortOnAddList', sortOnAddListSequencer]
       ].forEach(([typeName, sequencer]) => {
 
         const startTime = now();
