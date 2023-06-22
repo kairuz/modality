@@ -1,17 +1,19 @@
 import {Heap} from "../util.js";
-import {Sequencer, FLUSH_ORDERED, FLUSH_UNORDERED} from "../conductor.js";
+import {Sequencer, FLUSH_ORDERED, FLUSH_UNORDERED, FLUSH_NONE} from "../conductor.js";
 
 export default () => {
+  const now = typeof performance !== "undefined" ? () => performance.now() : () => Date.now();
+
   const MockPlayer = () => {
     return {
       play: (play) => {
         // console.log(`mockPlayer play ${play}`);
       },
-      get currentTime(){return Date.now();}
+      get currentTime(){return now();}
     };
   };
 
-  const SortedPlayList = (compare) => {
+  const SortOnAddPlayList = (compare) => {
     const isLessThan = (a, b) => compare(a, b) < 0;
 
     const arr = [];
@@ -62,7 +64,7 @@ export default () => {
     }
   };
 
-  const SortedPlayLinkedList = (compare) => {
+  const SortOnAddPlayLinkedList = (compare) => {
     const isLessThan = (a, b) => compare(a, b) < 0;
 
     const Node = () => {
@@ -180,22 +182,22 @@ export default () => {
 
 
   const heapBasedSequencer = Sequencer(MockPlayer(), Heap((p1, p2) => p1.when - p2.when));
-  const linkedListBasedSequencer = Sequencer(MockPlayer(), SortedPlayLinkedList((p1, p2) => p1.when - p2.when));
-  const listBasedSequencer = Sequencer(MockPlayer(), SortedPlayList((p1, p2) => p1.when - p2.when));
+  const sortOnAddLinkedListSequencer = Sequencer(MockPlayer(), SortOnAddPlayLinkedList((p1, p2) => p1.when - p2.when));
+  const sortOnAddListSequencer = Sequencer(MockPlayer(), SortOnAddPlayList((p1, p2) => p1.when - p2.when));
 
   const ITERATIONS = 100;
   const NO_OF_PLAYS = [50, 500, 5000];
 
   NO_OF_PLAYS.forEach((noOfPlays) => {
-    [[FLUSH_UNORDERED, 'flush-unordered'], [FLUSH_ORDERED, 'flush-ordered']].forEach(([flushType, flushName]) => {
+    [[FLUSH_UNORDERED, 'flush-unordered'], [FLUSH_ORDERED, 'flush-ordered'], [FLUSH_NONE, 'flush-none']].forEach(([flushType, flushName]) => {
       const rands = Array.from(Array(noOfPlays)).map(() => Math.trunc(Math.random() * 10000) / 1000);
       [
-        ['   heap', heapBasedSequencer],
-        ['lnkdLst', linkedListBasedSequencer],
-        ['   list', listBasedSequencer]
+        ['               heap', heapBasedSequencer],
+        ['sortOnAddLinkedList', sortOnAddLinkedListSequencer],
+        ['      sortOnAddList', sortOnAddListSequencer]
       ].forEach(([typeName, sequencer]) => {
 
-        const startTime = Date.now();
+        const startTime = now();
         for (let i = 0; i < ITERATIONS; i++) {
           rands.forEach((rand) => {
             sequencer.add({when: rand});
@@ -203,7 +205,7 @@ export default () => {
           sequencer.stop(null, flushType);
         }
 
-        const endTime = Date.now();
+        const endTime = now();
 
         console.log(`${typeName}, ${endTime - startTime} millis,\t${ITERATIONS} iters, ${noOfPlays} plays,\t${flushName}`);
       });
