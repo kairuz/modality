@@ -13,6 +13,73 @@ export default () => {
     };
   };
 
+  const SortOnPopPlayList = (compare) => {
+    const isLessThan = (a, b) => compare(a, b) < 0;
+
+    const arr = [];
+    let nextIndexToPop = null;
+
+    const findNextIndexToPop = () => {
+      if (arr.length === 0) {
+        throw 'list is empty';
+      }
+
+      if (arr.length === 1) {
+        nextIndexToPop = 0;
+      }
+      else {
+        let leastIndex = 0;
+        for (let i = 1; i < arr.length; i++) {
+          if (isLessThan(arr[i], arr[leastIndex])) {
+            leastIndex = i;
+          }
+        }
+        nextIndexToPop = leastIndex;
+      }
+    };
+
+    return {
+      add(play) {
+        arr.push(play);
+        nextIndexToPop = null;
+      },
+      peek() {
+        if (this.isEmpty) {
+          throw 'list is empty';
+        }
+
+        if (nextIndexToPop === null) {
+          findNextIndexToPop();
+        }
+        return arr[nextIndexToPop];
+      },
+      pop() {
+        if (this.isEmpty) {
+          throw 'list is empty';
+        }
+        if (nextIndexToPop === null) {
+          findNextIndexToPop();
+        }
+        const popped = arr.splice(nextIndexToPop, 1);
+        nextIndexToPop = null;
+        return popped;
+      },
+      clear() {
+        arr.length = 0;
+      },
+      get isEmpty(){return arr.length === 0;},
+      get isNotEmpty(){return !this.isEmpty},
+      get size(){return arr.length;},
+      toArray() {
+        return [...arr];
+      },
+      values() {
+        return arr.values()
+      }
+
+    };
+  };
+
   const SortOnAddPlayList = (compare) => {
     const isLessThan = (a, b) => compare(a, b) < 0;
 
@@ -27,8 +94,7 @@ export default () => {
         }
 
         for (let i = 0; i < arr.length; i++) {
-          const curr = arr[i];
-          if (isLessThan(play, curr)) {
+          if (isLessThan(play, arr[i])) {
             arr.splice(i, 0, play);
             return;
           }
@@ -39,13 +105,13 @@ export default () => {
       },
       peek() {
         if (this.isEmpty) {
-          throw 'linked list is empty';
+          throw 'list is empty';
         }
         return arr[0];
       },
       pop() {
         if (this.isEmpty) {
-          throw 'linked list is empty';
+          throw 'list is empty';
         }
         return arr.shift();
       },
@@ -181,9 +247,12 @@ export default () => {
   };
 
 
-  const heapBasedSequencer = Sequencer(MockPlayer(), Heap((p1, p2) => p1.when - p2.when));
-  const sortOnAddLinkedListSequencer = Sequencer(MockPlayer(), SortOnAddPlayLinkedList((p1, p2) => p1.when - p2.when));
-  const sortOnAddListSequencer = Sequencer(MockPlayer(), SortOnAddPlayList((p1, p2) => p1.when - p2.when));
+  const mockPlayer = MockPlayer();
+  const playCompare = (p1, p2) => p1.when - p2.when;
+  const heapBasedSequencer = Sequencer(mockPlayer, Heap(playCompare));
+  const sortOnAddLinkedListSequencer = Sequencer(mockPlayer, SortOnAddPlayLinkedList(playCompare));
+  const sortOnAddListSequencer = Sequencer(mockPlayer, SortOnAddPlayList(playCompare));
+  const sortOnPopListSequencer = Sequencer(mockPlayer, SortOnPopPlayList(playCompare));
 
   const ITERATIONS = 100;
   const NO_OF_PLAYS = [50, 500, 5000];
@@ -194,7 +263,8 @@ export default () => {
       [
         ['               heap', heapBasedSequencer],
         ['sortOnAddLinkedList', sortOnAddLinkedListSequencer],
-        ['      sortOnAddList', sortOnAddListSequencer]
+        ['      sortOnAddList', sortOnAddListSequencer],
+        ['      sortOnPopList', sortOnPopListSequencer]
       ].forEach(([typeName, sequencer]) => {
 
         const startTime = now();
